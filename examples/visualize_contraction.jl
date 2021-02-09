@@ -1,5 +1,6 @@
 using ITensors
 using ITensorsVisualization
+using Plots
 
 import ITensorsVisualization: visualize_contraction
 

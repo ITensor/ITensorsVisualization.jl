@@ -40,6 +40,11 @@ function contraction_graph(As::ITensor...)
       pos = findfirst(==(uncontracted_indᵢ), inds(Aⱼ))
       if !isnothing(pos)
         edge = (nodeᵢ, nodeⱼ)
+        if dir(uncontracted_indᵢ) == ITensors.Out
+          edge = reverse(edge)
+        else
+          uncontracted_indᵢ = dag(uncontracted_indᵢ)
+        end
         edge_index_list[edge] = [uncontracted_indᵢ]
       end
     end

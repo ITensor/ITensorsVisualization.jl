@@ -3,11 +3,18 @@ function visualize_contraction(As::ITensor...;
                                names = ["A$n" for n in 1:length(As)],
                                edgewidth = 5, showqns = false,
                                linklabels = "tags",
-                               fontsize = 5, method = "stress",
+                               fontsize = 5,
+                               method = "spring",
                                edgelabel_offset = 0.0,
-                               layout_kw = Dict{Symbol,Any}(),
+                               layout_kw = nothing,
                                curves = false)
   edge_index_list = contraction_graph(As...)
+
+  if string(method) == "spring" && isnothing(layout_kw)
+    layout_kw = Dict{Symbol, Any}(:C => 3.0, :iterations => 100_000)
+  else
+    layout_kw = Dict{Symbol, Any}()
+  end
 
   #
   # Compute the adjacency matrix/list
@@ -63,7 +70,7 @@ function visualize_contraction(As::ITensor...;
   # Plot the results
   #
 
-  p = plot()
+  p = Plots.plot()
   graphplot!(p, adjlist; arrow = true, nodeshape = :circle,
              curves = curves,
              names = names, edgewidth = edgewidths, edgelabel = edgelabels,

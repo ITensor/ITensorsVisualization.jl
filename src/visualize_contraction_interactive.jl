@@ -23,10 +23,28 @@ function lines_to_arrows(lines::Vector{Pair{Point2f0, Point2f0}};
   return start, dirs
 end
 
+function lines_to_edgelabelpoints(lines, shiftedgelabels = fill(Point2f0(0, 0), length(lines)))
+  if shiftedgelabels isa Point
+    shiftedgelabels = fill(shiftedgelabels, length(lines))
+  end
+  return (getindex.(lines, 2) .+ getindex.(lines, 1)) ./ 2 .+ shiftedgelabels
+end
+
 function visualize_network_interactive(adjlist::Vector{<:Vector{<:Number}},
                                        start_points::Vector;
-                                       edgewidths = 10, nodecolors = :lightblue,
-                                       arrows = false, nodesize = 100)
+                                       nodecolors = :lightblue,
+                                       arrows = false,
+                                       nodesizes = 100,
+                                       nodeshape = :rect,
+                                       nodelabels = String[],
+                                       nodelabelsize = 0.2,
+                                       nodelabeloffset = Point2f0(0.2, 0.1),
+                                       nodelabelcolor = :black,
+                                       edgelabels = String[],
+                                       edgelabelsize = 0.1,
+                                       edgewidths = 15,
+                                       edgewidthsscale = 10,
+                                       edgelabelcolor = :red)
   scene = Scene()
 
   nedges = sum(length, adjlist)
@@ -35,11 +53,33 @@ function visualize_network_interactive(adjlist::Vector{<:Vector{<:Number}},
   points = Node(Point2f0.(start_points))
 
   if edgewidths isa Number
-    edgewidths = fill(edgewidths, 2*nedges)
-  else
-    @assert length(edgewidths) == nedges
-    edgewidths = collect(Iterators.flatten(zip(edgewidths, edgewidths)))
+    edgewidths = fill(edgewidths, nedges)
+  elseif edgewidths isa Dict
+    edgewidths_vector = Float64[]
+    for nodeᵢ in 1:length(adjlist)
+      for nodeⱼ in adjlist[nodeᵢ]
+        # TODO: deal with the multigraph case with two directions
+        # In the multigraph case, the widths are multiplied
+        # together to represent a tensor product
+        edgewidth = 1
+        n = 1
+        while haskey(edgewidths, (nodeᵢ, nodeⱼ, n))
+          edgewidth *= edgewidths[(nodeᵢ, nodeⱼ, n)]
+          n += 1
+        end
+        push!(edgewidths_vector, edgewidth)
+      end
+    end
+    edgewidths = edgewidths_vector
   end
+
+  @assert length(edgewidths) == nedges
+  edgewidths = collect(Iterators.flatten(zip(edgewidths, edgewidths)))
+
+  # Rescale the edgewidths
+  max_edgewidths = maximum(edgewidths)
+  edgewidths ./= max_edgewidths
+  edgewidths .*= edgewidthsscale
 
   lines = Node(update_lines(adjlist, points[]))
 
@@ -47,17 +87,52 @@ function visualize_network_interactive(adjlist::Vector{<:Vector{<:Number}},
   # Line segments
   if arrows
     shorten_arrow_scale = 370
-    start, dirs = Node.(lines_to_arrows(lines[]; shorten_length = nodesize / shorten_arrow_scale))
-    arrows!(scene, start, dirs; line_arrow_kwargs...)
+    # XXX: Shorten arrow by different lengths for different node sizes
+    start, dirs = Node.(lines_to_arrows(lines[]; shorten_length = maximum(nodesizes) / shorten_arrow_scale))
+    arrows!(scene, start, dirs; arrowsize = 0.2, line_arrow_kwargs...)
   else
     linesegments!(scene, lines; line_arrow_kwargs...)
   end
 
   # Points
-  GLMakie.scatter!(scene, points, color = nodecolors, strokewidth = 5, markersize = nodesize,
-                   strokecolor = :black, raw = true)
+  GLMakie.scatter!(scene, points, color = nodecolors, strokewidth = 5, markersize = nodesizes,
+                   strokecolor = :black, raw = true, marker = nodeshape)
 
-  pplot = scene[end]
+  # Node labels
+  if !isempty(nodelabels)
+    nodelabelpoints = Node.(points[] .- nodelabeloffset)
+    for n in 1:npoints
+      text!(scene, nodelabels[n]; textsize = nodelabelsize, position = nodelabelpoints[n],
+            color = nodelabelcolor)
+    end
+  end
+
+  # Edge labels
+  if !isempty(edgelabels)
+    shiftedgelabels = Point2f0(-0.4, 0.0)
+    edgelabelpoints = Node.(lines_to_edgelabelpoints(lines[], shiftedgelabels))
+    n = 1
+    for nodeᵢ in 1:length(adjlist)
+      for nodeⱼ in adjlist[nodeᵢ]
+        # TODO: deal with bidirectional multigraph case
+        # Handle the multigraph case by appending the labels together
+        edgelabel = ""
+        nrepeat = 1
+        while haskey(edgelabels, (nodeᵢ, nodeⱼ, nrepeat))
+          if nrepeat > 1
+            edgelabel *= "\n ⊗ "
+          end
+          edgelabel *= edgelabels[(nodeᵢ, nodeⱼ, nrepeat)]
+          nrepeat += 1
+        end
+        text!(scene, edgelabel; textsize = edgelabelsize,
+              position = edgelabelpoints[n], color = edgelabelcolor)
+        n += 1
+      end
+    end
+  end
+
+  pplot = scene[2]
 
   # This function lets you drag the points and lines around with a left click
   function add_move!(scene, points, pplot)
@@ -81,10 +156,19 @@ function visualize_network_interactive(adjlist::Vector{<:Vector{<:Number}},
       # Update the lines with the new points
       new_lines = update_lines(adjlist, points[])
       if arrows
-        start[], dirs[] = lines_to_arrows(new_lines; shorten_length = nodesize / shorten_arrow_scale)
+        # XXX: shorten arrows by different lengths for different node sizes
+        start[], dirs[] = lines_to_arrows(new_lines; shorten_length = maximum(nodesizes) / shorten_arrow_scale)
       else
         # Update the lines with the new points
         lines[] = new_lines
+      end
+      # Update the text with the new points
+      for n in 1:npoints
+        nodelabelpoints[n][] = points[][n] - nodelabeloffset
+      end
+      new_edgelabelpoints = lines_to_edgelabelpoints(new_lines, shiftedgelabels)
+      for n in 1:length(edgelabelpoints)
+        edgelabelpoints[n][] = new_edgelabelpoints[n]
       end
       return
     end
@@ -102,14 +186,20 @@ end
 
 function visualize_contraction_interactive(As::ITensor...;
                                            names = ["A$n" for n in 1:length(As)],
-                                           edgewidth = 5, showqns = false,
-                                           linklabels = "tags",
-                                           fontsize = 5, method = "stress",
+                                           showtags = true,
+                                           showplev = true,
+                                           showid = false,
+                                           showdim = false,
+                                           showqns = false,
+                                           fontsize = 5,
+                                           method = "spring",
                                            edgelabel_offset = 0.0,
+                                           arrows = any(hasqns, As),
                                            layout_kw = Dict{Symbol,Any}(),
                                            curves = false)
   # No curves available in interactive mode
   @assert !curves
+  @assert length(As) == length(names)
 
   edge_index_list = contraction_graph(As...)
 
@@ -122,23 +212,21 @@ function visualize_contraction_interactive(As::ITensor...;
 
   #
   # Determine the edge widths from the Index dimensions
+  # These will be scaled in visualize_network_interactive
   #
 
-  edgewidths = Dict{Tuple{Int, Int}, Float64}()
+  edgewidths = Dict{Tuple{Int, Int, Int}, Float64}()
+  dimprods = Int[]
   for edge in keys(edge_index_list)
-    edgewidths[edge] = prod(dim, edge_index_list[edge]) / length(edge_index_list[edge])
+    inds = edge_index_list[edge]
+    dimprod = 1
+    for nind in 1:length(inds)
+      dim_ind = dim(inds[nind])
+      edgewidths[(edge..., nind)] = dim_ind
+      dimprod *= dim_ind
+    end
+    push!(dimprods, dimprod)
   end
-  maxdim = maximum(last, edgewidths)
-  for edge in keys(edge_index_list)
-    edgewidths[edge] *= edgewidth / maxdim
-  end
-
-  #
-  # Node labels are labels of the tensors
-  # By default, make names of site nodes empty
-  #
-
-  append!(names, fill("", size(adjlist, 1) - length(names)))
 
   #
   # Determine the edge labels from the Index tags, etc.
@@ -149,16 +237,31 @@ function visualize_contraction_interactive(As::ITensor...;
     inds = edge_index_list[edge]
     for nind in 1:length(inds)
       ind = inds[nind]
-      if !showqns
-        ind = removeqns(ind)
+
+      label = "("
+      if showdim
+        label *= "dim=$(dim(ind))|"
       end
-      if linklabels == "tags"
-        label = string(tags(ind))
-      else
-        io = IOBuffer()
-        show(io, ind)
-        label = String(take!(io))
+      if showid
+        label *= "id=$(id(ind) % 1000)|"
       end
+      if showtags
+        label *= string(tags(ind))
+      end
+      label *= ")"
+      if showplev
+        label *= ITensors.primestring(plev(ind))
+      end
+      if showqns
+        label *= "\n"
+        for (n, qnblock) in enumerate(space(ind))
+          label *= " $n: $qnblock"
+          if n < length(space(ind))
+            label *= "\n"
+          end
+        end
+      end
+
       edgelabels[(edge..., nind)] = label
     end
   end
@@ -166,15 +269,50 @@ function visualize_contraction_interactive(As::ITensor...;
   # Random starting points
   #start_points = [(rand(), rand()) for _ in 1:size(adjlist, 1)]
 
-  # Start points from NetworkLayout
-  start_points = NetworkLayout.Stress.layout(get_adjacency_matrix(adjlist), 2)
+  adjacency_matrix = get_adjacency_matrix(adjlist)
 
-  @show start_points
+  # Start points from NetworkLayout
+  start_points = if method == "random"
+    map(x -> 2 .* rand(Point{2, Float64}) .- 1, 1:size(adjacency_matrix, 1))
+  elseif method == "stress"
+    NetworkLayout.Stress.layout(adjacency_matrix, 2; iterations = 10_000_000)
+  elseif method == "sfdp"
+    NetworkLayout.SFDP.layout(adjacency_matrix, 2)
+  elseif method == "spring"
+    NetworkLayout.Spring.layout(adjacency_matrix, 2; C = 3.0, iterations = 100_000)
+  else
+    error("Network layout method $method not supported")
+  end
+
+  #
+  # Node labels are labels of the tensors
+  # By default, make names of site nodes empty
+  #
+
+  ntensors = length(As)
+  nsites = size(adjlist, 1) - ntensors
+
+  names = String[names...]
+  append!(names, fill("", nsites))
+
+  nodes = fill(:rect, ntensors)
+  append!(nodes, fill(:circle, nsites))
+
+  nodesizes = fill(100, ntensors)
+  append!(nodesizes, fill(25, nsites))
+
+  nodecolors = fill(:lightblue, ntensors)
+  append!(nodecolors, fill(:white, nsites))
 
   scene = visualize_network_interactive(adjlist,
                                         start_points;
-                                        edgewidths = 10, nodecolors = :lightblue,
-                                        arrows = false, nodesize = 100)
+                                        nodecolors = nodecolors,
+                                        arrows = arrows,
+                                        nodeshape = nodes,
+                                        nodesizes = nodesizes,
+                                        nodelabels = names,
+                                        edgelabels = edgelabels,
+                                        edgewidths = edgewidths)
   return scene
 end
 

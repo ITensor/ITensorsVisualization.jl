@@ -58,13 +58,18 @@ function visualize_network_interactive(adjlist::Vector{<:Vector{<:Number}},
     edgewidths_vector = Float64[]
     for nodeᵢ in 1:length(adjlist)
       for nodeⱼ in adjlist[nodeᵢ]
-        # TODO: deal with the multigraph case with two directions
         # In the multigraph case, the widths are multiplied
         # together to represent a tensor product
         edgewidth = 1
         n = 1
         while haskey(edgewidths, (nodeᵢ, nodeⱼ, n))
           edgewidth *= edgewidths[(nodeᵢ, nodeⱼ, n)]
+          n += 1
+        end
+        # Include the multigraph biderectional case
+        n = 1
+        while haskey(edgewidths, (nodeⱼ, nodeᵢ, n))
+          edgewidth *= edgewidths[(nodeⱼ, nodeᵢ, n)]
           n += 1
         end
         push!(edgewidths_vector, edgewidth)
@@ -111,6 +116,7 @@ function visualize_network_interactive(adjlist::Vector{<:Vector{<:Number}},
   if !isempty(edgelabels)
     shiftedgelabels = Point2f0(-0.4, 0.0)
     edgelabelpoints = Node.(lines_to_edgelabelpoints(lines[], shiftedgelabels))
+    label_already_used = Dict{Tuple{Int, Int, Int}, Bool}()
     n = 1
     for nodeᵢ in 1:length(adjlist)
       for nodeⱼ in adjlist[nodeᵢ]
@@ -118,11 +124,21 @@ function visualize_network_interactive(adjlist::Vector{<:Vector{<:Number}},
         # Handle the multigraph case by appending the labels together
         edgelabel = ""
         nrepeat = 1
-        while haskey(edgelabels, (nodeᵢ, nodeⱼ, nrepeat))
+        while haskey(edgelabels, (nodeᵢ, nodeⱼ, nrepeat)) && !haskey(label_already_used, (nodeᵢ, nodeⱼ, nrepeat))
           if nrepeat > 1
             edgelabel *= "\n ⊗ "
           end
           edgelabel *= edgelabels[(nodeᵢ, nodeⱼ, nrepeat)]
+          label_already_used[(nodeᵢ, nodeⱼ, nrepeat)] = true
+          nrepeat += 1
+        end
+        # Include the multigraph bidirectional case
+        nrepeat = 1
+        while haskey(edgelabels, (nodeⱼ, nodeᵢ, nrepeat)) && !haskey(label_already_used, (nodeⱼ, nodeᵢ, nrepeat))
+          edgelabel *= "\n ⊗ "
+          edgelabel *= edgelabels[(nodeⱼ, nodeᵢ, nrepeat)]
+          edgelabel *= " †"
+          label_already_used[(nodeⱼ, nodeᵢ, nrepeat)] = true
           nrepeat += 1
         end
         text!(scene, edgelabel; textsize = edgelabelsize,

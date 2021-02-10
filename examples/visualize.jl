@@ -21,5 +21,5 @@ ELₙ₋₁ = randomITensor(l⃗[n-1]', h⃗[n-1], dag(l⃗[n-1]))
 ERₙ₊₁ = randomITensor(l⃗[n+1]', dag(h⃗[n+1]), dag(l⃗[n+1]))
 
 R = @visualize ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁
-@show R ≈ ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁'
+@show R ≈ ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁
 

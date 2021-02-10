@@ -4,6 +4,7 @@ using GLMakie
 using ITensors
 using LinearAlgebra
 using NetworkLayout
+using SparseArrays
 
 export @visualize
 

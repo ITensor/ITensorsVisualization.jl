@@ -1,8 +1,21 @@
 
+const continues = ["c", "Continue", "C", "continue"]
+
+function c_to_continue()
+  while true
+    println("Press C/c and then Enter to continue:")
+    ans = readline()
+    ans ∈ continues && return
+  end
+end
+
 # Visualize a contraction and then perform the contraction
-function contract_visualize(As::ITensor...; kwargs...)
+function contract_visualize(As::ITensor...; pause = false, kwargs...)
   scene = visualize_tensornetwork(As...; kwargs...)
   display(scene)
+  if pause
+    c_to_continue()
+  end
   return *(As...)
 end
 

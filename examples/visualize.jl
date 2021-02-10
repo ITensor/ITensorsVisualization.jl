@@ -20,6 +20,11 @@ hₙ₊₁ = randomITensor(dag(h⃗[n]), s⃗[n+1]', dag(s⃗[n+1]), h⃗[n+1])
 ELₙ₋₁ = randomITensor(l⃗[n-1]', h⃗[n-1], dag(l⃗[n-1]))
 ERₙ₊₁ = randomITensor(l⃗[n+1]', dag(h⃗[n+1]), dag(l⃗[n+1]))
 
-R = @visualize ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁
-@show R ≈ ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁'
+R = @visualize ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁ pause = true
+@show R ≈ ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁
+
+# Split it up into multiple contractions
+R1 = @visualize ELₙ₋₁ * ψₙₙ₊₁ * hₙ pause = true
+R2 = @visualize R1 * hₙ₊₁ * ERₙ₊₁ pause = true
+@show R2 ≈ ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁
 

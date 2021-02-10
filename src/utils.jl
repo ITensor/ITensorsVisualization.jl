@@ -71,8 +71,34 @@ function get_adjacency_list(edge_index_list::Dict{Tuple{Int, Int}, Vector{Index}
   return adjlist
 end
 
+function get_source_destiny_weight(source::AbstractVector, destiny::AbstractVector)
+  if length(source) != length(destiny)
+    throw(ArgumentError("Source and destiny must have the same length."))
+  end
+  source, destiny, Float64[ 1.0 for i in source ]
+end
+
+function get_source_destiny_weight(adjlist::AbstractVector{V}) where V<:AbstractVector{T} where T<:Any
+  source = Int[]
+  destiny = Int[]
+  for (i,l) in enumerate(adjlist)
+    for j in l
+      push!(source, i)
+      push!(destiny, j)
+    end
+  end
+  return get_source_destiny_weight(source, destiny)
+end
+
+function get_adjacency_matrix(source::AbstractVector{Int}, destiny::AbstractVector{Int}, weights::AbstractVector)
+  n = max(maximum(source), maximum(destiny))
+  Matrix(sparse(source, destiny, weights, n, n))
+end
+
+# GraphRecipes.get_adjacency_matrix(adjlist)
 function get_adjacency_matrix(adjlist::Vector{Vector{Int}})
-  return GraphRecipes.get_adjacency_matrix(adjlist)
+  s, d, w = get_source_destiny_weight(adjlist)
+  return get_adjacency_matrix(s, d, w)
 end
 
 function get_adjacency_matrix(edge_index_list::Dict{Tuple{Int, Int}, Vector{Index}})

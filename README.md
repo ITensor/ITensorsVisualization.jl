@@ -1,6 +1,6 @@
 # ITensorsVisualization
 
-This is a package for visualizing tensor networks. The main purpose is to use it with the (ITensors.jl)[https://github.com/ITensor/ITensors.jl] package to view and debug tensor network contractions, for example:
+This is a package for visualizing tensor networks. The main purpose is to use it with the [ITensors.jl](https://github.com/ITensor/ITensors.jl) package to view and debug tensor network contractions, for example:
 ```julia
 using ITensors
 using ITensorsVisualization

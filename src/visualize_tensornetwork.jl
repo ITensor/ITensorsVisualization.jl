@@ -30,21 +30,21 @@ function lines_to_edgelabelpoints(lines, shiftedgelabels = fill(Point2f0(0, 0), 
   return (getindex.(lines, 2) .+ getindex.(lines, 1)) ./ 2 .+ shiftedgelabels
 end
 
-function visualize_network_interactive(adjlist::Vector{<:Vector{<:Number}},
-                                       start_points::Vector;
-                                       nodecolors = :lightblue,
-                                       arrows = false,
-                                       nodesizes = 100,
-                                       nodeshape = :rect,
-                                       nodelabels = String[],
-                                       nodelabelsize = 0.2,
-                                       nodelabeloffset = Point2f0(0.2, 0.1),
-                                       nodelabelcolor = :black,
-                                       edgelabels = String[],
-                                       edgelabelsize = 0.1,
-                                       edgewidths = 15,
-                                       edgewidthsscale = 10,
-                                       edgelabelcolor = :red)
+function visualize_network(adjlist::Vector{<:Vector{<:Number}},
+                           start_points::Vector;
+                           nodecolors = :lightblue,
+                           arrows = false,
+                           nodesizes = 100,
+                           nodeshape = :rect,
+                           nodelabels = String[],
+                           nodelabelsize = 0.2,
+                           nodelabeloffset = Point2f0(0.2, 0.1),
+                           nodelabelcolor = :black,
+                           edgelabels = String[],
+                           edgelabelsize = 0.1,
+                           edgewidths = 15,
+                           edgewidthsscale = 10,
+                           edgelabelcolor = :red)
   scene = Scene()
 
   nedges = sum(length, adjlist)
@@ -200,19 +200,19 @@ function visualize_network_interactive(adjlist::Vector{<:Vector{<:Number}},
   return scene
 end
 
-function visualize_contraction_interactive(As::ITensor...;
-                                           names = ["A$n" for n in 1:length(As)],
-                                           showtags = true,
-                                           showplev = true,
-                                           showid = false,
-                                           showdim = false,
-                                           showqns = false,
-                                           fontsize = 5,
-                                           method = "spring",
-                                           edgelabel_offset = 0.0,
-                                           arrows = any(hasqns, As),
-                                           layout_kw = Dict{Symbol,Any}(),
-                                           curves = false)
+function visualize_tensornetwork(As::ITensor...;
+                                 names = ["A$n" for n in 1:length(As)],
+                                 showtags = true,
+                                 showplevs = true,
+                                 showids = true,
+                                 showdims = true,
+                                 showqns = false,
+                                 fontsize = 5,
+                                 method = "spring",
+                                 edgelabel_offset = 0.0,
+                                 arrows = any(hasqns, As),
+                                 layout_kw = Dict{Symbol,Any}(),
+                                 curves = false)
   # No curves available in interactive mode
   @assert !curves
   @assert length(As) == length(names)
@@ -255,17 +255,17 @@ function visualize_contraction_interactive(As::ITensor...;
       ind = inds[nind]
 
       label = "("
-      if showdim
+      if showdims
         label *= "dim=$(dim(ind))|"
       end
-      if showid
+      if showids
         label *= "id=$(id(ind) % 1000)|"
       end
       if showtags
         label *= string(tags(ind))
       end
       label *= ")"
-      if showplev
+      if showplevs
         label *= ITensors.primestring(plev(ind))
       end
       if showqns
@@ -295,7 +295,7 @@ function visualize_contraction_interactive(As::ITensor...;
   elseif method == "sfdp"
     NetworkLayout.SFDP.layout(adjacency_matrix, 2)
   elseif method == "spring"
-    NetworkLayout.Spring.layout(adjacency_matrix, 2; C = 3.0, iterations = 100_000)
+    NetworkLayout.Spring.layout(adjacency_matrix, 2; C = 1.75, iterations = 100_000)
   else
     error("Network layout method $method not supported")
   end
@@ -320,15 +320,15 @@ function visualize_contraction_interactive(As::ITensor...;
   nodecolors = fill(:lightblue, ntensors)
   append!(nodecolors, fill(:white, nsites))
 
-  scene = visualize_network_interactive(adjlist,
-                                        start_points;
-                                        nodecolors = nodecolors,
-                                        arrows = arrows,
-                                        nodeshape = nodes,
-                                        nodesizes = nodesizes,
-                                        nodelabels = names,
-                                        edgelabels = edgelabels,
-                                        edgewidths = edgewidths)
+  scene = visualize_network(adjlist,
+                            start_points;
+                            nodecolors = nodecolors,
+                            arrows = arrows,
+                            nodeshape = nodes,
+                            nodesizes = nodesizes,
+                            nodelabels = names,
+                            edgelabels = edgelabels,
+                            edgewidths = edgewidths)
   return scene
 end
 

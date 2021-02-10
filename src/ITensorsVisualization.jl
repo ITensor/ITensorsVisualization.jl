@@ -1,17 +1,14 @@
 module ITensorsVisualization
 
 using GLMakie
-using GraphRecipes
 using ITensors
 using LinearAlgebra
 using NetworkLayout
-using Plots
 
-export visualize_contraction,
-       visualize_contraction_interactive
+export @visualize
 
 include("utils.jl")
-include("visualize_contraction.jl")
-include("visualize_contraction_interactive.jl")
+include("visualize_tensornetwork.jl")
+include("visualize_macro.jl")
 
 end

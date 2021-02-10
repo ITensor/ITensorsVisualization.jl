@@ -9,7 +9,7 @@ s⃗ = [s(n) for n in 1:N]
 l⃗ = [l(n) for n in 1:N-1]
 h⃗ = [h(n) for n in 1:N-1]
 
-# Add a multiindex
+# Add some more indices between two of the tensors
 x = Index([QN("Sz", 0) => 2]; tags = "X")
 y = Index([QN("Sz", 0) => 2]; tags = "Y")
 
@@ -20,14 +20,6 @@ hₙ₊₁ = randomITensor(dag(h⃗[n]), s⃗[n+1]', dag(s⃗[n+1]), h⃗[n+1])
 ELₙ₋₁ = randomITensor(l⃗[n-1]', h⃗[n-1], dag(l⃗[n-1]))
 ERₙ₊₁ = randomITensor(l⃗[n+1]', dag(h⃗[n+1]), dag(l⃗[n+1]))
 
-tensors = [ELₙ₋₁, ψₙₙ₊₁, hₙ, hₙ₊₁, ERₙ₊₁]
-names = ["ELₙ₋₁", "ψₙₙ₊₁", "hₙ", "hₙ₊₁", "ERₙ₊₁"]
-scene = visualize_contraction_interactive(tensors...; names = names,
-                                          showid = true, showdim = true,
-                                          showqns = true)
-
-# To save the plot:
-#using ITensorsVisualization.GLMakie
-#scene.center = false
-#save("tensor_network_interactive.jpeg", scene)
+R = @visualize ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁
+@show R ≈ ELₙ₋₁ * ψₙₙ₊₁ * hₙ * hₙ₊₁ * ERₙ₊₁'
 

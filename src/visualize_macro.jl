@@ -49,7 +49,7 @@ ABC = @visualize A * B * C
 
 # Pause to display intermediate results
 AB = @visualize A * B pause = true
-ABC = @visualize AB * C names = ["AB = A*B", "C"]
+ABC = @visualize AB * C labels = ["A*B", "C"]
 ```
 
 # Keyword arguments:
@@ -58,20 +58,20 @@ ABC = @visualize AB * C names = ["AB = A*B", "C"]
 - `showplevs::Bool = true`: show the Index prime levels on the edge labels of the network.
 - `showids::Bool = true`: show a shortened version of the Index id numbers in the edge labels of the network.
 - `showdims::Bool = true`: show the Index dimensions on the edge labels of the network.
-- `showqns::Bool = false`: show the quantum number 
-- `showarrows::Bool = all(hasqns, tensors)`: show the arrow directions on the edges of the network which correspond to the Index directions for QN indices (corresponding to contravariant and covariant spaces).
-- `names::Vector{String}`: custom names to display for the tensors in the digram. If not specified, they are determined automatically from the input to the macro.
+- `showqns::Bool = false`: show the quantum number sectors. Only available for ITensors with QNs.
+- `showarrows::Bool = all(hasqns, tensors)`: show the arrow directions on the edges of the network which correspond to the Index directions for QN indices (corresponding to contravariant and covariant spaces). Only well defined for ITensors with QNs.
+- `labels::Vector{String}`: custom tensor labels to display on the nodes of the digram. If not specified, they are determined automatically from the input to the macro.
 """
 macro visualize(ex, kwargs...)
   # Must be a tensor contraction
   @assert ex.args[1] == :*
   expr_kwargs = [esc(a) for a in kwargs]
-  res = if any(arg -> arg.args[1].args[1] == :names, expr_kwargs)
-    # If names was passed, don't automatically generate the names
+  res = if any(arg -> arg.args[1].args[1] == :labels, expr_kwargs)
+    # If labels was passed, don't automatically generate the labels
     :(contract_visualize($(esc.(ex.args[2:end])...); $(expr_kwargs...)))
   else
-    # names was not passed, automatically generate them from the macro input
-    :(contract_visualize($(esc.(ex.args[2:end])...); $(expr_kwargs...), names = expr_to_string.($(ex.args[2:end]))))
+    # labels was not passed, automatically generate them from the macro input
+    :(contract_visualize($(esc.(ex.args[2:end])...); $(expr_kwargs...), labels = expr_to_string.($(ex.args[2:end]))))
   end
   return res
 end

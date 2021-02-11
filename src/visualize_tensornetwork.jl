@@ -199,7 +199,7 @@ function visualize_network!(scene, adjlist::Vector{<:Vector{<:Number}},
 end
 
 function visualize_tensornetwork(As::ITensor...;
-                                 names = ["A$n" for n in 1:length(As)],
+                                 labels = ["T$n" for n in 1:length(As)],
                                  showtags = true,
                                  showplevs = true,
                                  showids = true,
@@ -210,11 +210,10 @@ function visualize_tensornetwork(As::ITensor...;
                                  edgelabel_offset = 0.0,
                                  showarrows = all(hasqns, As),
                                  layout_kw = Dict{Symbol,Any}(),
-                                 curves = false,
                                  scene = Scene())
-  # No curves available in interactive mode
-  @assert !curves
-  @assert length(As) == length(names)
+  if length(As) ≠ length(labels)
+    error("Number of tensor labels $labels does not match the number of tensors $(length(As)).")
+  end
 
   edge_index_list = contraction_graph(As...)
 
@@ -301,14 +300,14 @@ function visualize_tensornetwork(As::ITensor...;
 
   #
   # Node labels are labels of the tensors
-  # By default, make names of site nodes empty
+  # By default, make labels of site nodes empty
   #
 
   ntensors = length(As)
   nsites = size(adjlist, 1) - ntensors
 
-  names = String[names...]
-  append!(names, fill("", nsites))
+  labels = String[labels...]
+  append!(labels, fill("", nsites))
 
   nodes = fill(:rect, ntensors)
   append!(nodes, fill(:circle, nsites))
@@ -325,7 +324,7 @@ function visualize_tensornetwork(As::ITensor...;
                      showarrows = showarrows,
                      nodeshape = nodes,
                      nodesizes = nodesizes,
-                     nodelabels = names,
+                     nodelabels = labels,
                      edgelabels = edgelabels,
                      edgewidths = edgewidths)
   return scene

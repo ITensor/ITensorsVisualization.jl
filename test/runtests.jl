@@ -27,6 +27,8 @@ using Test
 
   # Split it up into multiple contractions
   R1 = @visualize ELn0 * ψn1n2 * hn1
-  R2 = @visualize R1 * hn2 * ERn2
+  R2 = @visualize R1 * hn2 * ERn2 labels = ["T1", "T2", "T3"]
   @test R2 ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
+
+  @test_throws ErrorException @visualize R1 * hn2 * ERn2 labels = ["T1", "T2"]
 end

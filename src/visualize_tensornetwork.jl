@@ -30,23 +30,21 @@ function lines_to_edgelabelpoints(lines, shiftedgelabels = fill(Point2f0(0, 0), 
   return (getindex.(lines, 2) .+ getindex.(lines, 1)) ./ 2 .+ shiftedgelabels
 end
 
-function visualize_network(adjlist::Vector{<:Vector{<:Number}},
-                           start_points::Vector;
-                           nodecolors = :lightblue,
-                           arrows = false,
-                           nodesizes = 100,
-                           nodeshape = :rect,
-                           nodelabels = String[],
-                           nodelabelsize = 0.2,
-                           nodelabeloffset = Point2f0(0.2, 0.1),
-                           nodelabelcolor = :black,
-                           edgelabels = String[],
-                           edgelabelsize = 0.1,
-                           edgewidths = 15,
-                           edgewidthsscale = 10,
-                           edgelabelcolor = :red)
-  scene = Scene()
-
+function visualize_network!(scene, adjlist::Vector{<:Vector{<:Number}},
+                            start_points::Vector;
+                            nodecolors = :lightblue,
+                            showarrows = false,
+                            nodesizes = 100,
+                            nodeshape = :rect,
+                            nodelabels = String[],
+                            nodelabelsize = 0.2,
+                            nodelabeloffset = Point2f0(0.2, 0.1),
+                            nodelabelcolor = :black,
+                            edgelabels = String[],
+                            edgelabelsize = 0.1,
+                            edgewidths = 15,
+                            edgewidthsscale = 10,
+                            edgelabelcolor = :red)
   nedges = sum(length, adjlist)
   npoints = length(start_points)
 
@@ -90,7 +88,7 @@ function visualize_network(adjlist::Vector{<:Vector{<:Number}},
 
   line_arrow_kwargs = (linewidth = edgewidths, scale_plot = false, show_axis = false)
   # Line segments
-  if arrows
+  if showarrows
     shorten_arrow_scale = 370
     # XXX: Shorten arrow by different lengths for different node sizes
     start, dirs = Node.(lines_to_arrows(lines[]; shorten_length = maximum(nodesizes) / shorten_arrow_scale))
@@ -171,7 +169,7 @@ function visualize_network(adjlist::Vector{<:Vector{<:Number}},
       end
       # Update the lines with the new points
       new_lines = update_lines(adjlist, points[])
-      if arrows
+      if showarrows
         # XXX: shorten arrows by different lengths for different node sizes
         start[], dirs[] = lines_to_arrows(new_lines; shorten_length = maximum(nodesizes) / shorten_arrow_scale)
       else
@@ -210,9 +208,10 @@ function visualize_tensornetwork(As::ITensor...;
                                  fontsize = 5,
                                  method = "spring",
                                  edgelabel_offset = 0.0,
-                                 arrows = any(hasqns, As),
+                                 showarrows = all(hasqns, As),
                                  layout_kw = Dict{Symbol,Any}(),
-                                 curves = false)
+                                 curves = false,
+                                 scene = Scene())
   # No curves available in interactive mode
   @assert !curves
   @assert length(As) == length(names)
@@ -320,15 +319,15 @@ function visualize_tensornetwork(As::ITensor...;
   nodecolors = fill(:lightblue, ntensors)
   append!(nodecolors, fill(:white, nsites))
 
-  scene = visualize_network(adjlist,
-                            start_points;
-                            nodecolors = nodecolors,
-                            arrows = arrows,
-                            nodeshape = nodes,
-                            nodesizes = nodesizes,
-                            nodelabels = names,
-                            edgelabels = edgelabels,
-                            edgewidths = edgewidths)
+  visualize_network!(scene, adjlist,
+                     start_points;
+                     nodecolors = nodecolors,
+                     showarrows = showarrows,
+                     nodeshape = nodes,
+                     nodesizes = nodesizes,
+                     nodelabels = names,
+                     edgelabels = edgelabels,
+                     edgewidths = edgewidths)
   return scene
 end
 

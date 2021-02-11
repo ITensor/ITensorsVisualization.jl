@@ -19,7 +19,7 @@ ABC = @visualize A * B * C
 ```
 A window like the following should appear:
 
-![alt text](assets/ITensorsVisualization_A*B*C.png)
+![alt text](assets/ITensorsVisualization_A_B_C.png)
 
 The visualization makes an initial guess for the locations of the tensors (using [NetworkLayout.jl](https://github.com/JuliaGraphs/NetworkLayout.jl)), and then allows users to interactively move the tensors to better locations. You can move the tensors and external indices (the square and circle nodes of the network) by left clicking on a node and dragging it to a new location.  You can also right click and drag to translate the entire diagram, and scroll to zoom in and out.
 
@@ -32,6 +32,6 @@ c
 ```
 This will first visualize the contraction `A * B`, wait for the user to respond, and then perform the contraction and continue to visualize and perform contraction `AB * C`. This is helpful for viewing and debugging multistep contractions.
 
-![alt text](assets/ITensorsVisualization_A*B.png)
-![alt text](assets/ITensorsVisualization_AB*C.png)
+![alt text](assets/ITensorsVisualization_A_B.png)
+![alt text](assets/ITensorsVisualization_AB_C.png)
 

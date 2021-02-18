@@ -198,8 +198,25 @@ function visualize_network!(scene, adjlist::Vector{<:Vector{<:Number}},
   return scene
 end
 
+function subscript_char(n::Integer)
+  @assert 0 ≤ n ≤ 9
+  return Char(0x2080 + n)
+end
+
+function subscript(n::Integer)
+  ss = prod(Iterators.reverse((subscript_char(d) for d in digits(abs(n)))))
+  if n < 0
+    ss = "₋" * ss
+  end
+  return ss
+end
+
+function tensor_labels(N::Integer)
+  return map(n -> "T" * subscript(n), 1:N)
+end
+
 function visualize_tensornetwork(As::ITensor...;
-                                 labels = ["T$n" for n in 1:length(As)],
+                                 labels = tensor_labels(length(As)),
                                  showtags = true,
                                  showplevs = true,
                                  showids = true,
@@ -212,7 +229,8 @@ function visualize_tensornetwork(As::ITensor...;
                                  layout_kw = Dict{Symbol,Any}(),
                                  scene = Scene())
   if length(As) ≠ length(labels)
-    error("Number of tensor labels $labels does not match the number of tensors $(length(As)).")
+    println("Number of tensor labels $labels does not match the number of tensors $(length(As)). Setting default values instead.")
+    labels = tensor_labels(length(As))
   end
 
   edge_index_list = contraction_graph(As...)

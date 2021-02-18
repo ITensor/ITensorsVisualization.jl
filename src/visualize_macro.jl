@@ -10,13 +10,16 @@ function c_to_continue()
 end
 
 # Visualize a contraction and then perform the contraction
-function contract_visualize(As::ITensor...; pause = false, kwargs...)
+function contract_visualize(As::ITensor...; contract = true, pause = false, kwargs...)
   scene = visualize_tensornetwork(As...; kwargs...)
   display(scene)
   if pause
     c_to_continue()
   end
-  return *(As...)
+  if contract
+    return *(As...)
+  end
+  return nothing
 end
 
 expr_to_string(s::Symbol) = String(s)

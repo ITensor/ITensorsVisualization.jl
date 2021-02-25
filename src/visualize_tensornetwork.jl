@@ -11,10 +11,23 @@ function update_lines(adjlist::Vector{Vector{Int}},
   return linesegment_list
 end
 
+# Determine the node size that the line segments end at
+# Used for scaling an arrow so they aren't covered by a point
+function endpoint_nodesizes(adjlist::Vector{Vector{Int}},
+                            nodesizes::Vector{<: Real})
+  _endpoint_nodesizes = Float64[]
+  for nodeᵢ in 1:length(adjlist)
+    for nodeⱼ in adjlist[nodeᵢ]
+      push!(_endpoint_nodesizes, nodesizes[nodeⱼ])
+    end
+  end
+  return _endpoint_nodesizes
+end
+
 # Convert lines to seperate vectors of starting points and directions
 # for use with `arrows!`
 function lines_to_arrows(lines::Vector{Pair{Point2f0, Point2f0}};
-                         shorten_length = 0.0)
+                         shorten_length = fill(0.0, length(lines)))
   start, finish = first.(lines), last.(lines)
   dirs = (finish .- start)
   lengths = norm.(dirs)
@@ -38,7 +51,7 @@ function visualize_network!(scene, adjlist::Vector{<:Vector{<:Number}},
                             nodeshape = :rect,
                             nodelabels = String[],
                             nodelabelsize = 0.2,
-                            nodelabeloffset = Point2f0(0.2, 0.1),
+                            nodelabeloffset = Point2f0(0.0, 0.0),
                             nodelabelcolor = :black,
                             edgelabels = String[],
                             edgelabelsize = 0.1,
@@ -48,6 +61,7 @@ function visualize_network!(scene, adjlist::Vector{<:Vector{<:Number}},
   nedges = sum(length, adjlist)
   npoints = length(start_points)
 
+  nodelabeloffset = Point2f0.(length.(nodelabels) .* 0.055, 0.1)
   points = Node(Point2f0.(start_points))
 
   if edgewidths isa Number
@@ -89,17 +103,22 @@ function visualize_network!(scene, adjlist::Vector{<:Vector{<:Number}},
   line_arrow_kwargs = (linewidth = edgewidths, scale_plot = false, show_axis = false)
   # Line segments
   if showarrows
-    shorten_arrow_scale = 370
-    # XXX: Shorten arrow by different lengths for different node sizes
-    start, dirs = Node.(lines_to_arrows(lines[]; shorten_length = maximum(nodesizes) / shorten_arrow_scale))
+    shorten_arrow_scale = 1.2
+    start, dirs = Node.(lines_to_arrows(lines[]; shorten_length = endpoint_nodesizes(adjlist, nodesizes) ./ shorten_arrow_scale))
     arrows!(scene, start, dirs; arrowsize = 0.2, line_arrow_kwargs...)
   else
     linesegments!(scene, lines; line_arrow_kwargs...)
   end
 
   # Points
-  GLMakie.scatter!(scene, points, color = nodecolors, strokewidth = 5, markersize = nodesizes,
-                   strokecolor = :black, raw = true, marker = nodeshape)
+  GLMakie.scatter!(scene, points;
+                   color = nodecolors,
+                   strokewidth = 5,
+                   markersize = nodesizes,
+                   markerspace = SceneSpace, #= Make markers scale with zoom =#
+                   strokecolor = :black,
+                   raw = true,
+                   marker = nodeshape)
 
   # Node labels
   if !isempty(nodelabels)
@@ -171,14 +190,14 @@ function visualize_network!(scene, adjlist::Vector{<:Vector{<:Number}},
       new_lines = update_lines(adjlist, points[])
       if showarrows
         # XXX: shorten arrows by different lengths for different node sizes
-        start[], dirs[] = lines_to_arrows(new_lines; shorten_length = maximum(nodesizes) / shorten_arrow_scale)
+        start[], dirs[] = lines_to_arrows(new_lines; shorten_length = endpoint_nodesizes(adjlist, nodesizes) ./ shorten_arrow_scale)
       else
         # Update the lines with the new points
         lines[] = new_lines
       end
       # Update the text with the new points
       for n in 1:npoints
-        nodelabelpoints[n][] = points[][n] - nodelabeloffset
+        nodelabelpoints[n][] = points[][n] - nodelabeloffset[n]
       end
       new_edgelabelpoints = lines_to_edgelabelpoints(new_lines, shiftedgelabels)
       for n in 1:length(edgelabelpoints)
@@ -330,8 +349,9 @@ function visualize_tensornetwork(As::ITensor...;
   nodes = fill(:rect, ntensors)
   append!(nodes, fill(:circle, nsites))
 
-  nodesizes = fill(100, ntensors)
-  append!(nodesizes, fill(25, nsites))
+  boxsize = 0.5
+  nodesizes = fill(boxsize, ntensors)
+  append!(nodesizes, fill(boxsize /  4, nsites))
 
   nodecolors = fill(:lightblue, ntensors)
   append!(nodecolors, fill(:white, nsites))

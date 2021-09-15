@@ -1,15 +1,22 @@
 module ITensorsVisualization
 
-using GLMakie
 using ITensors
+using LightGraphs
+using MetaGraphs
 using LinearAlgebra
 using NetworkLayout
 using SparseArrays
+using Statistics
 
-export @visualize
+# Backends
+using GLMakie
+using UnicodePlots
 
-include("utils.jl")
-include("visualize_tensornetwork.jl")
-include("visualize_macro.jl")
+export @visualize, visualize
+
+include("Makie/utils.jl")
+include("Makie/visualize_tensornetwork.jl")
+include("Makie/visualize_macro.jl")
+include("visualize/visualize_graph.jl")
 
 end

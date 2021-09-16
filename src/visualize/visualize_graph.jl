@@ -14,6 +14,8 @@ function circleplot!(plot; x=0, y=0, r=1, kwargs...)
   return plot
 end
 
+get_prop_default(g::SimpleGraph, prop_default...) = last(prop_default)
+
 function get_prop_default(g::AbstractGraph, prop_default...)
   prop = Base.front(prop_default)
   default = last(prop_default)

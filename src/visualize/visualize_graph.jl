@@ -1,8 +1,11 @@
-using NetworkLayout
-using LightGraphs
-using MetaGraphs
-using UnicodePlots
-using Statistics
+"""
+    Grid
+
+Gride layout.
+"""
+struct Grid end
+
+(::Grid)(g) = Point.(2 .* vertices(g), 0)
 
 function circleplot!(plot; x=0, y=0, r=1, kwargs...)
   iszero(r) && return plot
@@ -53,8 +56,8 @@ function visualize(
     grid=false,
     xlim=xlim,
     ylim=ylim,
-    width=35,
-    height=35,
+    width=30,
+    height=10,
   )
   for (e_pos, e) in zip(edge_pos, edges(g))
     xs = [e_pos[1][1], e_pos[2][1]]
@@ -68,7 +71,7 @@ function visualize(
   end
   for v in vertices(g)
     x, y = node_pos[v]
-    annotate!(plot, x, y, get_prop_default(g, v, label_key, string(v)))
+    annotate!(plot, x, y, get_prop_default(g, v, label_key, string(v)); valign=:bottom)
   end
   return plot
 end

@@ -12,6 +12,7 @@ MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 NetworkLayout = "46757867-2c16-5918-afeb-47bfcb05e46a"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [compat]
 GLMakie = "0.1.26"

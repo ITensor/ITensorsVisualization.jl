@@ -1,3 +1,6 @@
+function commoninds(g)
+end
+
 function LightGraphs.SimpleGraph(tn::Vector{ITensor})
   N = length(tn)
   g = SimpleGraph(N)
@@ -5,6 +8,12 @@ function LightGraphs.SimpleGraph(tn::Vector{ITensor})
     t1, t2 = tn[n1], tn[n2]
     if hascommoninds(t1, t2)
       add_edge!(g, n1 => n2)
+    end
+  end
+  for v in vertices(g)
+    if hasuniqueinds(tn[v], tn[neighbors(mg, v)]...)
+      # Add a self-loop
+      add_edge!(g, v1 => v2)
     end
   end
   return g

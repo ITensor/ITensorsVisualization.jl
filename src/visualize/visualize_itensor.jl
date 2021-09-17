@@ -1,5 +1,6 @@
 function label_string(i::Index; show_tags=false)
-  str = string("(", dim(i))
+  str = ""
+  str *= string("(", dim(i))
   if show_tags
     str *= string("|", tags(i))
   end
@@ -7,15 +8,15 @@ function label_string(i::Index; show_tags=false)
   return str
 end
 
-function label_string(is)
-  s = ""
+function label_string(is; is_self_loop=false)
+  str = is_self_loop ? "s" : "l"
   for n in eachindex(is)
-    s *= label_string(is[n])
+    str *= label_string(is[n])
     if n ≠ lastindex(is)
-      s *= "⊗"
+      str *= "⊗"
     end
   end
-  return s
+  return str
 end
 
 function default_vertex_labels(r::AbstractRange)
@@ -28,12 +29,12 @@ default_label_key() = :label
 
 function set_labels!(g::AbstractGraph; label_key, vertex_labels)
   for e in edges(g)
-    commoninds_e = get_prop(g, e, :commoninds)
-    set_prop!(g, e, label_key, label_string(commoninds_e))
+    # This includes self-loops
+    indsₑ = get_prop(g, e, :inds)
+    set_prop!(g, e, label_key, label_string(indsₑ; is_self_loop=is_self_loop(e)))
   end
   for v in vertices(g)
-    uniqueinds_v = get_prop(g, v, :uniqueinds)
-    vlabel = vertex_labels[v] * label_string(uniqueinds_v)
+    vlabel = vertex_labels[v]
     set_prop!(g, v, label_key, vlabel)
   end
   return g
@@ -45,4 +46,4 @@ function visualize(tn::Vector{ITensor}; label_key=default_label_key(), vertex_la
   return visualize(g; kwargs...)
 end
 
-visualize(ψ::MPS) = visualize(data(ψ); layout=Grid())
+visualize(ψ::MPS; kwargs...) = visualize(data(ψ); layout=Grid(), kwargs...)

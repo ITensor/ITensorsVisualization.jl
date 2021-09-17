@@ -30,6 +30,8 @@ function visualize(
   edge_color=:blue,
   vertex_size=0.2,
   vertex_color=edge_color,
+  width=50,
+  height=20,
 )
   node_pos = layout(g)
   edge_pos = [node_pos[src(edge)] => node_pos[dst(edge)] for edge in edges(g)]
@@ -40,44 +42,51 @@ function visualize(
 
   #vertex_size = vertex_size * (xmax - xmin)
 
-  xscale = 0.3 * (xmax - xmin)
-  yscale = 0.3 * (ymax - ymin)
+  xscale = 0.2 * (xmax - xmin)
+  yscale = 0.2 * (ymax - ymin)
   xlim = [xmin - xscale, xmax + xscale]
   ylim = [ymin - yscale, ymax + yscale]
-  plot = lineplot(
-    backend,
-    [0.],
-    [0.];
-    color=edge_color,
-    border=:none,
-    labels=false,
-    grid=false,
+
+  # Initialize the plot
+  plt = plot(backend;
     xlim=xlim,
     ylim=ylim,
-    width=30,
-    height=10,
+    width=width,
+    height=height,
   )
+
+  # Add edges and nodes
   for (e_pos, e) in zip(edge_pos, edges(g))
-    xs = [e_pos[1][1], e_pos[2][1]]
-    ys = [e_pos[1][2], e_pos[2][2]]
-    edge_label = get_prop_default(g, e, label_key, string(e))
     if is_self_loop(e)
-      x, y = xs[1], ys[1]
-      @assert x, y == xs[2], ys[2]
-      lineplot!(backend, plot, [x, x], [y, y - 1]; color=edge_color)
+      draw_edge!(backend, plt, e_pos[1], e_pos[1] - Point(0, 1); color=edge_color)
     else
-      lineplot!(backend, plot, xs, ys; color=edge_color)
+      draw_edge!(backend, plt, e_pos[1], e_pos[2]; color=edge_color)
     end
-    annotate!(backend, plot, mean(xs), mean(ys), edge_label)
   end
+  ## for v in vertices(g)
+  ##   x, y = node_pos[v]
+  ##   circleplot!(backend, plt; x=x, y=y, r=vertex_size, color=vertex_color)
+  ## end
   for v in vertices(g)
     x, y = node_pos[v]
-    circleplot!(backend, plot; x=x, y=y, r=vertex_size, color=vertex_color)
+    node_label = get_prop_default(g, v, label_key, string(v))
+  end
+
+  # Add edge labels and node labels
+  for (e_pos, e) in zip(edge_pos, edges(g))
+    edge_label = get_prop_default(g, e, label_key, string(e))
+    if is_self_loop(e)
+      @assert e_pos[1] == e_pos[2]
+      str_pos = e_pos[1] - Point(0, 1)
+      annotate!(backend, plt, str_pos..., edge_label)
+    else
+      annotate!(backend, plt, mean(e_pos)..., edge_label)
+    end
   end
   for v in vertices(g)
     x, y = node_pos[v]
     node_label = get_prop_default(g, v, label_key, string(v))
-    annotate!(backend, plot, x, y, node_label; valign=:bottom)
+    annotate!(backend, plt, x, y, node_label)
   end
-  return plot
+  return plt
 end

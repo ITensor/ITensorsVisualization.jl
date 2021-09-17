@@ -10,13 +10,19 @@ using Statistics
 
 using ITensors: data
 
+export @visualize, visualize
+
 # Backends
-# TODO: use Requires to make optional
-using UnicodePlots: UnicodePlots
 include("visualize/backends/interface.jl")
+
+using UnicodePlots: UnicodePlots
 include("visualize/backends/UnicodePlots.jl")
 
-export @visualize, visualize
+using GRUtils: GRUtils
+include("visualize/backends/GR.jl")
+
+using Plots: Plots
+include("visualize/backends/Plots.jl")
 
 # UnicodePlots backend
 include("visualize/visualize_graph.jl")

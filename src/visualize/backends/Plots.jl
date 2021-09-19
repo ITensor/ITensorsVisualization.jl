@@ -10,6 +10,8 @@ function plot(::Val{:Plots};
     axis=false,
     grid=false,
     legend=false,
+    xlim=xlim,
+    ylim=ylim,
   )
   return plot
 end

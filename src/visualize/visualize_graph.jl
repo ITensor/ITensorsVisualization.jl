@@ -5,7 +5,7 @@ Gride layout.
 """
 struct Grid end
 
-(::Grid)(g) = Point.(2 .* vertices(g), 0)
+(::Grid)(g) = Point.(5 .* (vertices(g) .- 1), 0)
 
 is_self_loop(e::AbstractEdge) = src(e) == dst(e)
 
@@ -42,10 +42,20 @@ function visualize(
 
   #vertex_size = vertex_size * (xmax - xmin)
 
-  xscale = 0.2 * (xmax - xmin)
-  yscale = 0.2 * (ymax - ymin)
+  xscale = 0.1 * (xmax - xmin)
+  yscale = max(0.1 * (ymax - ymin), 0.01 * xscale)
   xlim = [xmin - xscale, xmax + xscale]
   ylim = [ymin - yscale, ymax + yscale]
+
+  # Good for periodic MPS
+  site_vertex_shift = -Point(0, 0.2 * abs(ylim[2] - ylim[1]))
+
+  @show node_pos
+
+  # Good for open boundary MPS
+  #site_vertex_shift = -Point(0, 0.001 * (xmax - xmin))
+
+  @show site_vertex_shift
 
   # Initialize the plot
   plt = plot(backend;
@@ -58,7 +68,7 @@ function visualize(
   # Add edges and nodes
   for (e_pos, e) in zip(edge_pos, edges(g))
     if is_self_loop(e)
-      draw_edge!(backend, plt, e_pos[1], e_pos[1] - Point(0, 1); color=edge_color)
+      draw_edge!(backend, plt, e_pos[1], e_pos[1] + site_vertex_shift; color=edge_color)
     else
       draw_edge!(backend, plt, e_pos[1], e_pos[2]; color=edge_color)
     end
@@ -77,7 +87,7 @@ function visualize(
     edge_label = get_prop_default(g, e, label_key, string(e))
     if is_self_loop(e)
       @assert e_pos[1] == e_pos[2]
-      str_pos = e_pos[1] - Point(0, 1)
+      str_pos = e_pos[1] + site_vertex_shift
       annotate!(backend, plt, str_pos..., edge_label)
     else
       annotate!(backend, plt, mean(e_pos)..., edge_label)

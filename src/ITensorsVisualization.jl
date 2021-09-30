@@ -10,29 +10,32 @@ using Statistics
 
 using ITensors: data
 
-export @visualize, visualize
+export @visualize, visualize, itensornetwork
 
 # Backends
-include("visualize/backends/interface.jl")
+include("backends/interface.jl")
 
 using UnicodePlots: UnicodePlots
-include("visualize/backends/UnicodePlots.jl")
+include("backends/UnicodePlots.jl")
 
 using GRUtils: GRUtils
-include("visualize/backends/GR.jl")
+include("backends/GR.jl")
 
 using Plots: Plots
-include("visualize/backends/Plots.jl")
-
-# UnicodePlots backend
-include("visualize/visualize_graph.jl")
-include("visualize/itensor_graph.jl")
-include("visualize/visualize_itensor.jl")
+include("backends/Plots.jl")
 
 # Makie backend
 using GLMakie
-include("Makie/utils.jl")
-include("Makie/visualize_tensornetwork.jl")
-include("Makie/visualize_macro.jl")
+using Makie
+using GraphMakie
+include("backends/Makie.jl")
+# UnicodePlots backend
+include("visualize_graph.jl")
+include("itensor_graph.jl")
+include("visualize_itensor.jl")
+
+## include("Makie/utils.jl")
+## include("Makie/visualize_tensornetwork.jl")
+## include("Makie/visualize_macro.jl")
 
 end

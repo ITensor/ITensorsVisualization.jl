@@ -26,6 +26,7 @@ default_vertex_labels(g::AbstractGraph) = default_vertex_labels(vertices(g))
 default_vertex_labels(tn::AbstractArray{ITensor}) = default_vertex_labels(eachindex(tn))
 
 default_label_key() = :label
+default_width_key() = :width
 
 function set_labels!(g::AbstractGraph; label_key, vertex_labels)
   for e in edges(g)
@@ -40,9 +41,23 @@ function set_labels!(g::AbstractGraph; label_key, vertex_labels)
   return g
 end
 
-function visualize(tn::Vector{ITensor}; label_key=default_label_key(), vertex_labels=default_vertex_labels(tn), kwargs...)
+function width(inds)
+  return log2(dim(inds)) + 1
+end
+
+function set_widths!(g::AbstractGraph; width_key)
+  for e in edges(g)
+    # This includes self-loops
+    indsₑ = get_prop(g, e, :inds)
+    set_prop!(g, e, width_key, width(indsₑ)) #label_string(indsₑ; is_self_loop=is_self_loop(e)))
+  end
+  return g
+end
+
+function visualize(tn::Vector{ITensor}; label_key=default_label_key(), width_key=default_width_key(), vertex_labels=default_vertex_labels(tn), kwargs...)
   g = MetaGraph(tn)
   set_labels!(g; label_key, vertex_labels)
+  set_widths!(g; width_key)
   return visualize(g; kwargs...)
 end
 

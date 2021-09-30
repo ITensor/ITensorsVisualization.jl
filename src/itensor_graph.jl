@@ -34,14 +34,19 @@ function MetaGraphs.MetaGraph(tn::Vector{ITensor})
   return mg
 end
 
-function itensornetwork(g::AbstractGraph; linkspaces=1)
+function itensornetwork(g::AbstractGraph; linkspaces=1, sitespaces=1)
   N = nv(g)
   # TODO: Specialize to Index{typeof(linkspaces)}
   inds_network = [Index[] for _ in 1:N]
   for e in edges(g)
-    lₑ = Index(linkspaces; tags="l=$(src(e))↔$(dst(e))")
-    push!(inds_network[src(e)], lₑ)
-    push!(inds_network[dst(e)], dag(lₑ))
+    if !is_self_loop(e)
+      lₑ = Index(linkspaces; tags="l=$(src(e))↔$(dst(e))")
+      push!(inds_network[src(e)], lₑ)
+      push!(inds_network[dst(e)], dag(lₑ))
+    else
+      sₑ = Index(sitespaces; tags="s=$(src(e))")
+      push!(inds_network[src(e)], sₑ)
+    end
   end
   tn = Vector{ITensor}(undef, N)
   for n in 1:N

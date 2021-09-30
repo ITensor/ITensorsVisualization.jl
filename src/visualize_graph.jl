@@ -50,12 +50,8 @@ function visualize(
   # Good for periodic MPS
   site_vertex_shift = -Point(0, 0.2 * abs(ylim[2] - ylim[1]))
 
-  @show node_pos
-
   # Good for open boundary MPS
   #site_vertex_shift = -Point(0, 0.001 * (xmax - xmin))
-
-  @show site_vertex_shift
 
   # Initialize the plot
   plt = plot(backend;

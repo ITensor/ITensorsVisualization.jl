@@ -33,4 +33,3 @@ t_bfs = bfs_tree(g, 1)
 t_spt = dijkstra_spt(g, 1)
 
 @show t_spt
-

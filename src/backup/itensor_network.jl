@@ -43,7 +43,9 @@ function label_string(is)
   return s
 end
 
-function graphplot(tn::Vector{ITensor}; label_key=:label, vertex_label=["T$n" for n in 1:length(tn)])
+function graphplot(
+  tn::Vector{ITensor}; label_key=:label, vertex_label=["T$n" for n in 1:length(tn)]
+)
   g = MetaGraph(tn)
   for e in edges(g)
     commoninds_e = get_prop(g, e, :commoninds)
@@ -54,7 +56,7 @@ function graphplot(tn::Vector{ITensor}; label_key=:label, vertex_label=["T$n" fo
     vlabel = vertex_label[v] * label_string(uniqueinds_v)
     set_prop!(g, v, label_key, vlabel)
   end
-  graphplot(g)
+  return graphplot(g)
 end
 
 graphplot(ψ::MPS) = graphplot(ψ.data)

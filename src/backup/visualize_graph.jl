@@ -43,16 +43,16 @@ function visualize(
   xlim = [xmin - xscale, xmax + xscale]
   ylim = [ymin - yscale, ymax + yscale]
   plot = lineplot(
-    [0.],
-    [0.];
+    [0.0],
+    [0.0];
     color=edge_color,
     border=:none,
     labels=false,
     grid=false,
     xlim=xlim,
     ylim=ylim,
-    width = 35,
-    height = 35,
+    width=35,
+    height=35,
   )
   for (e_pos, e) in zip(edge_pos, edges(g))
     xs = [e_pos[1][1], e_pos[2][1]]

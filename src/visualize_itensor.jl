@@ -54,7 +54,13 @@ function set_widths!(g::AbstractGraph; width_key)
   return g
 end
 
-function visualize(tn::Vector{ITensor}; label_key=default_label_key(), width_key=default_width_key(), vertex_labels=default_vertex_labels(tn), kwargs...)
+function visualize(
+  tn::Vector{ITensor};
+  label_key=default_label_key(),
+  width_key=default_width_key(),
+  vertex_labels=default_vertex_labels(tn),
+  kwargs...,
+)
   g = MetaGraph(tn)
   set_labels!(g; label_key, vertex_labels)
   set_widths!(g; width_key)

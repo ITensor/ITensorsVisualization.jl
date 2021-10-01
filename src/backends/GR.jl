@@ -3,15 +3,10 @@ function clear_axis!(plot)
   GRUtils.xticklabels!(plot, String[""])
   GRUtils.yticklabels!(plot, String[""])
   GRUtils.xticks!(plot, 0)
-  GRUtils.yticks!(plot, 0)
+  return GRUtils.yticks!(plot, 0)
 end
 
-function plot(::Val{:GR};
-  xlim,
-  ylim,
-  width,
-  height,
-)
+function plot(::Val{:GR}; xlim, ylim, width, height)
   plot = GRUtils.plot([])
   clear_axis!(plot)
   return plot

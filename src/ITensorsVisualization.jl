@@ -33,9 +33,6 @@ include("backends/Makie.jl")
 include("visualize_graph.jl")
 include("itensor_graph.jl")
 include("visualize_itensor.jl")
-
-## include("Makie/utils.jl")
-## include("Makie/visualize_tensornetwork.jl")
-## include("Makie/visualize_macro.jl")
+include("visualize_macro.jl")
 
 end

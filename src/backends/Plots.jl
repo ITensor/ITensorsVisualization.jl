@@ -1,17 +1,6 @@
-function plot(::Val{:Plots};
-  xlim,
-  ylim,
-  width,
-  height,
-)
+function plot(::Val{:Plots}; xlim, ylim, width, height)
   plot = Plots.plot(;
-    xticks=false,
-    yticks=false,
-    axis=false,
-    grid=false,
-    legend=false,
-    xlim=xlim,
-    ylim=ylim,
+    xticks=false, yticks=false, axis=false, grid=false, legend=false, xlim=xlim, ylim=ylim
   )
   return plot
 end

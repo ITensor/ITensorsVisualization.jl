@@ -3,7 +3,7 @@ function contraction_graph(As::ITensor...)
   N = length(As)
 
   # Make edges for the contracted indices
-  edge_index_list = Dict{Tuple{Int, Int}, Vector{Index}}()
+  edge_index_list = Dict{Tuple{Int,Int},Vector{Index}}()
   for nodeᵢ in 1:N
     Aᵢ = As[nodeᵢ]
     for nodeⱼ in nodeᵢ:N
@@ -33,8 +33,8 @@ function contraction_graph(As::ITensor...)
 
   # Make nodes out of the uncontracted indices
   uncontracted_inds = noncommoninds(As...)
-  for nodeᵢ in N+1:N+length(uncontracted_inds)
-    uncontracted_indᵢ = uncontracted_inds[nodeᵢ-N]
+  for nodeᵢ in (N + 1):(N + length(uncontracted_inds))
+    uncontracted_indᵢ = uncontracted_inds[nodeᵢ - N]
     for nodeⱼ in 1:N
       Aⱼ = As[nodeⱼ]
       pos = findfirst(==(uncontracted_indᵢ), inds(Aⱼ))
@@ -53,7 +53,7 @@ function contraction_graph(As::ITensor...)
   return edge_index_list
 end
 
-function get_adjacency_list(edge_index_list::Dict{Tuple{Int, Int}, Vector{Index}})
+function get_adjacency_list(edge_index_list::Dict{Tuple{Int,Int},Vector{Index}})
   # Determine the number of nodes from the edge list
   N = 1
   for edge in keys(edge_index_list)
@@ -75,13 +75,15 @@ function get_source_destiny_weight(source::AbstractVector, destiny::AbstractVect
   if length(source) != length(destiny)
     throw(ArgumentError("Source and destiny must have the same length."))
   end
-  source, destiny, Float64[ 1.0 for i in source ]
+  return source, destiny, Float64[1.0 for i in source]
 end
 
-function get_source_destiny_weight(adjlist::AbstractVector{V}) where V<:AbstractVector{T} where T<:Any
+function get_source_destiny_weight(
+  adjlist::AbstractVector{V}
+) where {V<:AbstractVector{T}} where {T<:Any}
   source = Int[]
   destiny = Int[]
-  for (i,l) in enumerate(adjlist)
+  for (i, l) in enumerate(adjlist)
     for j in l
       push!(source, i)
       push!(destiny, j)
@@ -90,9 +92,11 @@ function get_source_destiny_weight(adjlist::AbstractVector{V}) where V<:Abstract
   return get_source_destiny_weight(source, destiny)
 end
 
-function get_adjacency_matrix(source::AbstractVector{Int}, destiny::AbstractVector{Int}, weights::AbstractVector)
+function get_adjacency_matrix(
+  source::AbstractVector{Int}, destiny::AbstractVector{Int}, weights::AbstractVector
+)
   n = max(maximum(source), maximum(destiny))
-  Matrix(sparse(source, destiny, weights, n, n))
+  return Matrix(sparse(source, destiny, weights, n, n))
 end
 
 # GraphRecipes.get_adjacency_matrix(adjlist)
@@ -101,7 +105,6 @@ function get_adjacency_matrix(adjlist::Vector{Vector{Int}})
   return get_adjacency_matrix(s, d, w)
 end
 
-function get_adjacency_matrix(edge_index_list::Dict{Tuple{Int, Int}, Vector{Index}})
+function get_adjacency_matrix(edge_index_list::Dict{Tuple{Int,Int},Vector{Index}})
   return get_adjacency_matrix(get_adjacency_list(edge_index_list))
 end
-

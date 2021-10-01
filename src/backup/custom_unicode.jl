@@ -15,13 +15,15 @@ function unicode_visualization(
   @show indsⁿ¹
   @show indsⁿ²
   @show indsⁿ¹ⁿ²
-  mat = Char['●' '—' '●'
-             '|' ' ' '|']
+  mat = Char[
+    '●' '—' '●'
+    '|' ' ' '|'
+  ]
   for r in axes(mat, 1)
-     print("\n")
-     for x in @view mat[r, :]
-       print(x)
-     end
+    print("\n")
+    for x in @view mat[r, :]
+      print(x)
+    end
   end
 end
 
@@ -32,4 +34,3 @@ A = randomITensor(i, dag(j))
 B = randomITensor(j, dag(k))
 tn = [A, B]
 unicode_visualization(tn)
-

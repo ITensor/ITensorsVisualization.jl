@@ -12,9 +12,7 @@ function edge_width_default(g::AbstractGraph; width_key=default_width_key(), def
   return [get_prop_default(g, e, width_key, default) for e in edges(g)]
 end
 
-function visualize(
-  backend::Val{:Makie},
-  g::AbstractGraph)
+function visualize(backend::Val{:Makie}, g::AbstractGraph)
   f, ax, p = graphplot(
     g;
     node_size=[50 for i in 1:nv(g)],
@@ -31,7 +29,7 @@ function visualize(
     selfedge_width=0.001,
     arrow_show=false,
     node_marker='●', #'◼',
-    node_attr=(; strokecolor=:black, strokewidth=3)
+    node_attr=(; strokecolor=:black, strokewidth=3),
   )
   hidedecorations!(ax)
   hidespines!(ax)

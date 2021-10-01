@@ -1,8 +1,16 @@
-plot(::Val{T}, args...; kwargs...) where {T} = error("plot not implemented for backend type $T.")
-draw_edge!(::Val{T}, args...; kwargs...) where {T} = error("draw_edge! not implemented for backend type $T.")
-annotate!(::Val{T}, args...; kwargs...) where {T} = error("annotate! not implemented for backend type $T.")
+function plot(::Val{T}, args...; kwargs...) where {T}
+  return error("plot not implemented for backend type $T.")
+end
+function draw_edge!(::Val{T}, args...; kwargs...) where {T}
+  return error("draw_edge! not implemented for backend type $T.")
+end
+function annotate!(::Val{T}, args...; kwargs...) where {T}
+  return error("annotate! not implemented for backend type $T.")
+end
 
-translate_color(::Val{T}, color) where {T} = error("translate_color not implemented for backend type $T and color $color")
+function translate_color(::Val{T}, color) where {T}
+  return error("translate_color not implemented for backend type $T and color $color")
+end
 
 point_to_line(v1, v2) = ([v1[1], v2[1]], [v1[2], v2[2]])
 

@@ -43,7 +43,9 @@ function is_grid(dim::Val{1}, periodic::Val{false}, g::AbstractGraph)
   return true
 end
 
-grid_positions(g::AbstractGraph; dim, periodic=false, v_src=nothing) = grid_positions(Val(dim), Val(periodic), g; v_src)
+function grid_positions(g::AbstractGraph; dim, periodic=false, v_src=nothing)
+  return grid_positions(Val(dim), Val(periodic), g; v_src)
+end
 
 is_tree(g::AbstractGraph) = (ne(g) == nv(g) - 1) && is_connected(g)
 
@@ -68,7 +70,7 @@ function grid_positions(dim::Val{1}, periodic::Val{false}, g::AbstractGraph; v_s
   pos[v_src] = num_vertices_found
   !is_bulk(dim, g, v_src) && return nothing
 
-  for num_vertices_found ∈ 3:nv(g)
+  for num_vertices_found in 3:nv(g)
     v_dst = filter(≠(v_src_prev), neighbors(g, v_src))[]
     v_src, v_src_prev = v_dst, v_src
     pos[v_src] = num_vertices_found
@@ -100,7 +102,7 @@ function grid_positions(dim::Val{1}, periodic::Val{true}, g::AbstractGraph; v_sr
   pos[v_src] = num_vertices_found
   !is_bulk(dim, g, v_src) && return nothing
 
-  for num_vertices_found ∈ 3:nv(g)
+  for num_vertices_found in 3:nv(g)
     v_dst = filter(≠(v_src_prev), neighbors(g, v_src))[]
     v_src, v_src_prev = v_dst, v_src
     pos[v_src] = num_vertices_found

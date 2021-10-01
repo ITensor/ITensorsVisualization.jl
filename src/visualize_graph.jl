@@ -21,6 +21,8 @@ function visualize(g::AbstractGraph; backend="UnicodePlots", kwargs...)
   return visualize(Val(Symbol(backend)), g; kwargs...)
 end
 
+default_vertex_labels(g) = [string(v) for v in vertices(g)]
+
 function visualize(
   backend::Val,
   g::AbstractGraph;
@@ -30,6 +32,7 @@ function visualize(
   edge_color=:blue,
   vertex_size=0.2,
   vertex_color=edge_color,
+  vertex_labels=default_vertex_labels(g),
   width=50,
   height=20,
 )
@@ -54,12 +57,7 @@ function visualize(
   #site_vertex_shift = -Point(0, 0.001 * (xmax - xmin))
 
   # Initialize the plot
-  plt = plot(backend;
-    xlim=xlim,
-    ylim=ylim,
-    width=width,
-    height=height,
-  )
+  plt = plot(backend; xlim=xlim, ylim=ylim, width=width, height=height)
 
   # Add edges and nodes
   for (e_pos, e) in zip(edge_pos, edges(g))
@@ -75,7 +73,7 @@ function visualize(
   ## end
   for v in vertices(g)
     x, y = node_pos[v]
-    node_label = get_prop_default(g, v, label_key, string(v))
+    node_label = get_prop_default(g, v, label_key, vertex_labels[v])
   end
 
   # Add edge labels and node labels

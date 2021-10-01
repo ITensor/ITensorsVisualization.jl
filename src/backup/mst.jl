@@ -21,7 +21,7 @@ wg = SimpleWeightedGraph(nv(g))
 
 for e in edges(g)
   dw = mean([dist[src(e)], dist[dst(e)]])
-  w = 1 / dw ^ 2 + eps() * randn()
+  w = 1 / dw^2 + eps() * randn()
   add_edge!(wg, src(e), dst(e), w)
 end
 
@@ -42,7 +42,7 @@ end
 
 edgelabel_dict = Dict{Tuple{Int,Int},String}()
 for ew in edges(wg)
-  edgelabel_dict[(src(ew), dst(ew))] = string(round(weight(ew), digits=2))
+  edgelabel_dict[(src(ew), dst(ew))] = string(round(weight(ew); digits=2))
 end
 
 edgecolor_dict = Dict()
@@ -53,7 +53,7 @@ end
 
 edgelabel_dict_mst = Dict()
 for i in vertices(g_st), j in vertices(g_st)
-  edgelabel_dict_mst[(i, j)] = string(round(get_weight(g_st, i, j), digits=2))
+  edgelabel_dict_mst[(i, j)] = string(round(get_weight(g_st, i, j); digits=2))
 end
 
 plt = graphplot(
@@ -69,4 +69,3 @@ plt = graphplot(
 )
 
 plt
-

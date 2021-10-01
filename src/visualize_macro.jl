@@ -11,7 +11,7 @@ end
 
 # Visualize a contraction and then perform the contraction
 function contract_visualize(As::ITensor...; contract=true, pause=false, kwargs...)
-  scene = visualize_tensornetwork(As...; kwargs...)
+  scene = visualize(collect(As); kwargs...)
   display(scene)
   if pause
     c_to_continue()
@@ -77,7 +77,7 @@ macro visualize(ex, kwargs...)
     :(contract_visualize(
       $(esc.(ex.args[2:end])...);
       $(expr_kwargs...),
-      labels=expr_to_string.($(ex.args[2:end])),
+      vertex_labels=expr_to_string.($(ex.args[2:end])),
     ))
   end
   return res

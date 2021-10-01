@@ -1,12 +1,7 @@
-function plot(::Val{:UnicodePlots};
-  xlim,
-  ylim,
-  width,
-  height,
-)
+function plot(::Val{:UnicodePlots}; xlim, ylim, width, height)
   plot = UnicodePlots.lineplot(
-    [0.],
-    [0.];
+    [0.0],
+    [0.0];
     border=:none,
     labels=false,
     grid=false,

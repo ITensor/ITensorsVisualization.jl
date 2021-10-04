@@ -29,13 +29,13 @@ using ITensors: data
 
 export @visualize, visualize, itensornetwork
 
+# Backends interface
+include("backends/interface.jl")
+
 include("visualize_graph.jl")
 include("itensor_graph.jl")
 include("visualize_itensor.jl")
 include("visualize_macro.jl")
-
-# Backends interface
-include("backends/interface.jl")
 
 # Backends
 include("backends/UnicodePlots.jl")

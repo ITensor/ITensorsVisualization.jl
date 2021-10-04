@@ -8,14 +8,14 @@ function c_to_continue()
   end
 end
 
-function visualize(f::Function, As::Vector{ITensor}; contract=true, pause=false, kwargs...)
+function visualize(f, As::Vector{ITensor}; execute=true, pause=false, kwargs...)
   scene = visualize(As; kwargs...)
   display(scene)
   if pause
     c_to_continue()
   end
-  if contract
-    return f(As...)
+  if execute
+    return f(As)
   end
   return nothing
 end

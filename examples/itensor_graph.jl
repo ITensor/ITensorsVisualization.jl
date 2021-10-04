@@ -1,9 +1,12 @@
 using ITensors
-using ITensorsVisualize
+using ITensorsVisualization
 using LightGraphs
 
-g = Graph(5)
-add_edge!(g, 1 => 2)
-tn = itensornetwork(g)
-@visualize tn
+g = grid((5,))
+for v in vertices(g)
+  add_edge!(g, v => v)
+end
+tn = itensornetwork(g; linkspaces=10, sitespaces=2)
+ψ = MPS(tn)
+@visualize ψ
 

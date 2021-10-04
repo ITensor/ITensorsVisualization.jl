@@ -34,7 +34,12 @@ function MetaGraphs.MetaGraph(tn::Vector{ITensor})
   return mg
 end
 
-function itensornetwork(g::AbstractGraph; linkspaces=1, sitespaces=1)
+default_linkspaces() = 1
+default_sitespaces() = 1
+
+function itensornetwork(g::AbstractGraph;
+                        linkspaces=default_linkspaces(),
+                        sitespaces=default_sitespaces())
   N = nv(g)
   # TODO: Specialize to Index{typeof(linkspaces)}
   inds_network = [Index[] for _ in 1:N]

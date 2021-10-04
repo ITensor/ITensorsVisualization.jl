@@ -1,4 +1,3 @@
-
 const continues = ["c", "Continue", "C", "continue"]
 
 function c_to_continue()
@@ -9,17 +8,20 @@ function c_to_continue()
   end
 end
 
-# Visualize a contraction and then perform the contraction
-function contract_visualize(As::ITensor...; contract=true, pause=false, kwargs...)
-  scene = visualize(collect(As); kwargs...)
+function visualize(f::Function, As::Vector{ITensor}; contract=true, pause=false, kwargs...)
+  scene = visualize(As; kwargs...)
   display(scene)
   if pause
     c_to_continue()
   end
   if contract
-    return *(As...)
+    return f(As...)
   end
   return nothing
+end
+
+function visualize(f::Function, As::ITensor...; kwargs...)
+  return visualize(f, collect(As); kwargs...)
 end
 
 expr_to_string(s::Symbol) = String(s)
@@ -65,20 +67,46 @@ ABC = @visualize AB * C labels = ["A*B", "C"]
 - `showarrows::Bool = all(hasqns, tensors)`: show the arrow directions on the edges of the network which correspond to the Index directions for QN indices (corresponding to contravariant and covariant spaces). Only well defined for ITensors with QNs.
 - `labels::Vector{String}`: custom tensor labels to display on the nodes of the digram. If not specified, they are determined automatically from the input to the macro.
 """
-macro visualize(ex, kwargs...)
-  # Must be a tensor contraction
-  @assert ex.args[1] == :*
-  expr_kwargs = [esc(a) for a in kwargs]
-  res = if any(arg -> arg.args[1].args[1] == :labels, expr_kwargs)
-    # If labels was passed, don't automatically generate the labels
-    :(contract_visualize($(esc.(ex.args[2:end])...); $(expr_kwargs...)))
-  else
-    # labels was not passed, automatically generate them from the macro input
-    :(contract_visualize(
-      $(esc.(ex.args[2:end])...);
-      $(expr_kwargs...),
-      vertex_labels=expr_to_string.($(ex.args[2:end])),
-    ))
+macro visualize(ex::Symbol, kwargs...)
+  ex_res = quote
+    visualize($(ex); $(kwargs...))
   end
-  return res
+  return esc(ex_res)
 end
+
+macro visualize(ex::Expr, kwargs...)
+  ex_res = :(visualize($(first(ex.args)), $(esc.(ex.args[2:end])...); $(esc.(kwargs)...)))
+  return ex_res
+end
+
+## macro visualize_contract(ex, kwargs...)
+##   # Must be a tensor contraction
+##   @assert ex.args[1] == :*
+##   expr_kwargs = [esc(a) for a in kwargs]
+##   res = if any(arg -> arg.args[1].args[1] == :labels, expr_kwargs)
+##     # If labels was passed, don't automatically generate the labels
+##     :(contract_visualize($(esc.(ex.args[2:end])...); $(expr_kwargs...)))
+##   else
+##     # labels was not passed, automatically generate them from the macro input
+##     :(contract_visualize(
+##       $(esc.(ex.args[2:end])...);
+##       $(expr_kwargs...),
+##       vertex_labels=expr_to_string.($(ex.args[2:end])),
+##     ))
+##   end
+##   return res
+## end
+
+## # Visualize a contraction and then perform the contraction
+## function contract_visualize(As::ITensor...; contract=true, pause=false, kwargs...)
+##   scene = visualize(collect(As); kwargs...)
+##   display(scene)
+##   if pause
+##     c_to_continue()
+##   end
+##   if contract
+##     return *(As...)
+##   end
+##   return nothing
+## end
+

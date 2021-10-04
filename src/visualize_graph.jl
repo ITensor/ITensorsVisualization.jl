@@ -17,14 +17,17 @@ function get_prop_default(g::AbstractGraph, prop_default...)
   return has_prop(g, prop...) ? get_prop(g, prop...) : default
 end
 
-function visualize(g::AbstractGraph; backend="UnicodePlots", kwargs...)
-  return visualize(Val(Symbol(backend)), g; kwargs...)
+default_backend() = Backend("UnicodePlots")
+
+function visualize(g::AbstractGraph; backend=get_backend(), kwargs...)
+  backend = isnothing(backend) ? default_backend() : Backend(backend)
+  return visualize(Backend(backend), g; kwargs...)
 end
 
 default_vertex_labels(g) = [string(v) for v in vertices(g)]
 
 function visualize(
-  backend::Val,
+  backend::Backend,
   g::AbstractGraph;
   layout=Spring(),
   label_key=:label,

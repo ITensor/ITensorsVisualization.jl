@@ -1,38 +1,44 @@
 module ITensorsVisualization
 
 using ITensors
-using LightGraphs
+using Colors
+using GeometryBasics
 using MetaGraphs
 using LinearAlgebra
 using NetworkLayout
 using SparseArrays
 using Statistics
 
+# Avoid conflict with `ITensors.contract`
+# (LightGraphs also exports `contract).
+using LightGraphs:
+  LightGraphs,
+  AbstractEdge,
+  AbstractGraph,
+  SimpleGraph,
+  add_edge!,
+  dst,
+  edges,
+  ne,
+  neighbors,
+  nv,
+  src,
+  vertices
+
 using ITensors: data
 
 export @visualize, visualize, itensornetwork
 
-# Backends
-include("backends/interface.jl")
-
-using UnicodePlots: UnicodePlots
-include("backends/UnicodePlots.jl")
-
-using GRUtils: GRUtils
-include("backends/GR.jl")
-
-using Plots: Plots
-include("backends/Plots.jl")
-
-# Makie backend
-using GLMakie
-using Makie
-using GraphMakie
-include("backends/Makie.jl")
-# UnicodePlots backend
 include("visualize_graph.jl")
 include("itensor_graph.jl")
 include("visualize_itensor.jl")
 include("visualize_macro.jl")
+
+# Backends interface
+include("backends/interface.jl")
+
+# Backends
+include("backends/UnicodePlots.jl")
+include("backends/Makie.jl")
 
 end

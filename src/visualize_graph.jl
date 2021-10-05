@@ -38,6 +38,7 @@ function visualize(
   vertex_labels=default_vertex_labels(g),
   width=50,
   height=20,
+  kwargs...
 )
   node_pos = layout(g)
   edge_pos = [node_pos[src(edge)] => node_pos[dst(edge)] for edge in edges(g)]
@@ -48,8 +49,8 @@ function visualize(
 
   #vertex_size = vertex_size * (xmax - xmin)
 
-  xscale = 0.1 * (xmax - xmin)
-  yscale = max(0.1 * (ymax - ymin), 0.01 * xscale)
+  xscale = 0.5 * (xmax - xmin)
+  yscale = max(0.5 * (ymax - ymin), 0.01 * xscale)
   xlim = [xmin - xscale, xmax + xscale]
   ylim = [ymin - yscale, ymax + yscale]
 

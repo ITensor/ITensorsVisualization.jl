@@ -7,6 +7,4 @@ for v in vertices(g)
   add_edge!(g, v => v)
 end
 tn = itensornetwork(g; linkspaces=10, sitespaces=2)
-ψ = MPS(tn)
-@visualize ψ
-
+@visualize tn

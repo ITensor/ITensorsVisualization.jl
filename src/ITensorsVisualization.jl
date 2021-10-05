@@ -25,7 +25,7 @@ using LightGraphs:
   src,
   vertices
 
-using ITensors: data
+using ITensors: data, QNIndex
 
 export @visualize, visualize, itensornetwork
 

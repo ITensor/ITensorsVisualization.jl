@@ -8,20 +8,16 @@ function c_to_continue()
   end
 end
 
-function visualize(f, As::Vector{ITensor}; execute=true, pause=false, kwargs...)
-  scene = visualize(As; kwargs...)
+function visualize(f::Union{Function,Type}, As...; execute=true, pause=false, kwargs...)
+  scene = visualize(As...; kwargs...)
   display(scene)
   if pause
     c_to_continue()
   end
   if execute
-    return f(As)
+    return f(As...)
   end
   return nothing
-end
-
-function visualize(f::Function, As::ITensor...; kwargs...)
-  return visualize(f, collect(As); kwargs...)
 end
 
 expr_to_string(s::Symbol) = String(s)
@@ -69,13 +65,18 @@ ABC = @visualize AB * C labels = ["A*B", "C"]
 """
 macro visualize(ex::Symbol, kwargs...)
   ex_res = quote
-    visualize($(ex); $(kwargs...))
+    visualize($(ex); vertex_labels_prefix=$(Expr(:quote, ex)), $(kwargs...))
   end
   return esc(ex_res)
 end
 
 macro visualize(ex::Expr, kwargs...)
-  ex_res = :(visualize($(first(ex.args)), $(esc.(ex.args[2:end])...); $(esc.(kwargs)...)))
+  expr_kwargs = [esc(a) for a in kwargs]
+  if any(arg -> arg.args[1].args[1] == :vertex_labels, expr_kwargs)
+    ex_res = :(visualize($(first(ex.args)), $(esc.(ex.args[2:end])...); $(esc.(kwargs)...)))
+  else
+    ex_res = :(visualize($(first(ex.args)), $(esc.(ex.args[2:end])...); vertex_labels=expr_to_string.($(ex.args[2:end])), $(esc.(kwargs)...)))
+  end
   return ex_res
 end
 

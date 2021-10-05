@@ -24,3 +24,5 @@ function annotate!(::Backend"UnicodePlots", plot, x, y, str)
   UnicodePlots.annotate!(plot, x, y, str)
   return plot
 end
+
+supports_newlines(::Backend"UnicodePlots") = false

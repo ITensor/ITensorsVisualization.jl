@@ -18,6 +18,7 @@ function edge_width_default(g::AbstractGraph; width_key=default_width_key(), def
   return [get_prop_default(g, e, width_key, default) for e in edges(g)]
 end
 
+_ndims(::Any) = 2
 _ndims(::NetworkLayout.AbstractLayout{N}) where {N} = N
 
 function visualize(
@@ -27,9 +28,10 @@ function visualize(
   siteind_direction=Point2(0, -1),
   ndims=2,
   layout=Spring(dim=ndims),
-  vertex_size=100,
-  vertex_labels_textsize=30,
+  vertex_size=35,
+  vertex_labels_textsize=20,
   edge_labels_textsize=30,
+  arrow_size=30,
   show,
 )
   if ismissing(Makie.current_backend[])
@@ -53,12 +55,12 @@ function visualize(
     elabels=elabels_default(g),
     elabels_color=colorant"red",
     elabels_textsize=edge_labels_textsize,
-    selfedge_width=1e-6, # Small enough so you can't see the loop, big enough for site label to show up
+    selfedge_width=1e-5, # Small enough so you can't see the loop, big enough for site label to show up
     selfedge_direction=siteind_direction,
     selfedge_size=3,
     arrow_show=show.arrows,
-    arrow_shift=0.7,
-    arrow_size=20,
+    arrow_shift=0.3,
+    arrow_size=arrow_size,
     node_marker='●', #'◼',
     node_attr=(; strokecolor=:black, strokewidth=3),
   )

@@ -47,11 +47,13 @@ function label_string(i::Index; show)
 end
 
 function label_string(is; is_self_loop=false, newlines=true, show)
-  str = "" #is_self_loop ? "s" : "l"
+  str = ""
   for n in eachindex(is)
     str *= label_string(is[n]; show)
     if n ≠ lastindex(is)
-      str *= "⊗"
+      if any((show.dims, show.tags, show.ids, show.qns))
+        str *= "⊗"
+      end
       if newlines && any((show.tags, show.ids, show.qns))
         str *= "\n"
       end
@@ -109,8 +111,9 @@ function set_widths!(g::AbstractGraph; width_key)
   return g
 end
 
-supports_newlines(str::String) = supports_newlines(Backend(str))
 supports_newlines(::Backend) = true
+supports_newlines(::Nothing) = true
+supports_newlines(str::String) = supports_newlines(Backend(str))
 
 _hasqns(tn::Vector{ITensor}) = any(hasqns, tn)
 
@@ -127,11 +130,12 @@ function visualize(
   backend=get_backend(),
   kwargs...,
 )
+  show = merge(default_show(tn), show)
   g = MetaGraph(tn)
   if !supports_newlines(backend)
     newlines = false
   end
-  set_labels!(g; label_key, vertex_labels, show=merge(default_show(tn), show), newlines)
+  set_labels!(g; label_key, vertex_labels, show, newlines)
   set_widths!(g; width_key)
   return visualize(g; backend, show, kwargs...)
 end

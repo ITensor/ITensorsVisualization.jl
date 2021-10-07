@@ -1,15 +1,16 @@
 hasuniqueinds(args...; kwargs...) = !isempty(uniqueinds(args...; kwargs...))
 
+# TODO: rename graph, dispatch on QNs to DiGraph
 function LightGraphs.SimpleGraph(tn::Vector{ITensor})
   nv = length(tn)
-  g = SimpleGraph(nv)
+  g = SimpleDiGraph(nv)
   for v1 in 1:nv, v2 in (v1 + 1):nv
     if hascommoninds(tn[v1], tn[v2])
       add_edge!(g, v1 => v2)
     end
   end
   for v in vertices(g)
-    if hasuniqueinds(tn[v], tn[neighbors(g, v)]...)
+    if hasuniqueinds(tn[v], tn[all_neighbors(g, v)]...)
       # Add a self-loop
       add_edge!(g, v => v)
     end
@@ -17,9 +18,10 @@ function LightGraphs.SimpleGraph(tn::Vector{ITensor})
   return g
 end
 
+# TODO: rename indsgraph, dispatch on QNs to DiGraph
 function MetaGraphs.MetaGraph(tn::Vector{ITensor})
   sg = SimpleGraph(tn)
-  mg = MetaGraph(sg)
+  mg = MetaDiGraph(sg)
   for e in edges(mg)
     indsₑ = if is_self_loop(e)
       v = src(e)
@@ -37,10 +39,20 @@ end
 default_linkspaces() = 1
 default_sitespaces() = 1
 
+default(x, x_default) = x
+default(x::Nothing, x_default) = x_default
+
 function itensornetwork(g::AbstractGraph;
                         linkspaces=default_linkspaces(),
-                        sitespaces=default_sitespaces())
+                        sitespaces=nothing)
   N = nv(g)
+  if !isnothing(sitespaces) && !any_self_loops(g)
+    g = copy(g)
+    for v in vertices(g)
+      add_edge!(g, v => v)
+    end
+  end
+  sitespaces = default(sitespaces, default_sitespaces())
   # TODO: Specialize to Index{typeof(linkspaces)}
   inds_network = [Index[] for _ in 1:N]
   for e in edges(g)

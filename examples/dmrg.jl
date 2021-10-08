@@ -2,10 +2,10 @@ using ITensors
 using ITensorsVisualization
 
 N = 10
-s(n) = Index([QN("Sz", 0) => 1, QN("Sz", 1) => 1]; tags="S=1/2,Site,n=$n")
+sites(n) = Index([QN("Sz", 0) => 1, QN("Sz", 1) => 1]; tags="S=1/2,Site,n=$n")
 l(n) = Index([QN("Sz", 0) => 10, QN("Sz", 1) => 10]; tags="Link,l=$n")
 h(n) = Index([QN("Sz", 0) => 5, QN("Sz", 1) => 5]; tags="ham,Link,l=$n")
-s⃗ = [s(n) for n in 1:N]
+s⃗ = [sites(n) for n in 1:N]
 l⃗ = [l(n) for n in 1:(N - 1)]
 h⃗ = [h(n) for n in 1:(N - 1)]
 
@@ -20,10 +20,13 @@ hn2 = randomITensor(dag(h⃗[n]), s⃗[n + 1]', dag(s⃗[n + 1]), h⃗[n + 1])
 ELn0 = randomITensor(l⃗[n - 1]', h⃗[n - 1], dag(l⃗[n - 1]))
 ERn2 = randomITensor(l⃗[n + 1]', dag(h⃗[n + 1]), dag(l⃗[n + 1]))
 
-R = @visualize ELn0 * ψn1n2 * hn1 * hn2 * ERn2 pause = true
+vertex = (size=50,)
+show = (tags=true,)
+
+R = @visualize ELn0 * ψn1n2 * hn1 * hn2 * ERn2 show=show vertex=vertex pause=true
 @show R ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
 
 # Split it up into multiple contractions
-R1 = @visualize ELn0 * ψn1n2 * hn1 pause = true
-R2 = @visualize R1 * hn2 * ERn2 pause = true
+R1 = @visualize ELn0 * ψn1n2 * hn1 show=show vertex=vertex pause=true
+R2 = @visualize R1 * hn2 * ERn2 show=show vertex=vertex pause=true
 @show R2 ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2

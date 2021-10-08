@@ -4,24 +4,9 @@ using LayeredLayouts
 using LightGraphs
 using GLMakie
 
+include("utils/circuit_network.jl")
+
 ITensorsVisualization.set_backend!("Makie")
-
-function layered_layout(g)
- xs, ys, _ = solve_positions(Zarate(), g)
- return Point.(zip(xs, ys))
-end
-
-function circuit_network(gates, s::Vector{<:Index})
-  s = copy(s)
-  U = ITensor[]
-  for g in gates
-    push!(U, op(g, s))
-    for n in g[2:end]
-      s[n] = s[n]'
-    end
-  end
-  return U, s
-end
 
 N = 10
 layers = 10

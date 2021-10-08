@@ -19,6 +19,6 @@ U, s̃ = circuit_network(gates, s)
 ψ̃ = MPS(s̃)
 tn = [prod(ψ), U..., prod(ψ̃)]
 
-#@visualize tn show=(arrows=true, plevs=true) layout=layered_layout edge_labels_textsize=20
-@visualize tn ndims=3 show=(arrows=true, plevs=true) edge_labels_textsize=10
+#@visualize tn show=(arrows=true, plevs=true) layout=layered_layout edge=(textsize=20,)
+@visualize tn ndims=3 show=(arrows=true, plevs=true) edge=(textsize=10,)
 #@visualize tn backend="UnicodePlots" show=(dims=false,) layout=layered_layout

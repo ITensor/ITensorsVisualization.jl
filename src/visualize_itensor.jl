@@ -11,12 +11,15 @@ function qnstring(i::QNIndex)
     end
   end
   str *= "]"
+  if dir(i) == ITensors.In
+    str *= "†"
+  end
   return str
 end
 
 function label_string(i::Index; show)
   str = ""
-  if any((show.tags, show.plevs, show.ids))
+  if any((show.tags, show.plevs, show.ids, show.qns))
     str *= "("
   end
   if show.dims
@@ -34,7 +37,7 @@ function label_string(i::Index; show)
     end
     str *= tagsstring(i)
   end
-  if any((show.tags, show.plevs, show.ids))
+  if any((show.tags, show.plevs, show.ids, show.qns))
     str *= ")"
   end
   if show.plevs
@@ -131,7 +134,7 @@ function visualize(
   kwargs...,
 )
   show = merge(default_show(tn), show)
-  g = MetaGraph(tn)
+  g = MetaDiGraph(tn)
   if !supports_newlines(backend)
     newlines = false
   end

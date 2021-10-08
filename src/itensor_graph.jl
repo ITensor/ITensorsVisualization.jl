@@ -1,12 +1,28 @@
 hasuniqueinds(args...; kwargs...) = !isempty(uniqueinds(args...; kwargs...))
 
+function graph_dir(inds)
+  dirs = dir.(inds)
+  if length(dirs) == 1
+    return only(dirs)
+  end
+  if all(==(dirs[1]), dirs)
+    return dirs[1]
+  end
+  return ITensors.Out
+end
+
 # TODO: rename graph, dispatch on QNs to DiGraph
-function LightGraphs.SimpleGraph(tn::Vector{ITensor})
+function LightGraphs.SimpleDiGraph(tn::Vector{ITensor})
   nv = length(tn)
   g = SimpleDiGraph(nv)
   for v1 in 1:nv, v2 in (v1 + 1):nv
-    if hascommoninds(tn[v1], tn[v2])
-      add_edge!(g, v1 => v2)
+    indsᵛ¹ᵛ² = commoninds(tn[v1], tn[v2])
+    if !isempty(commoninds(tn[v1], tn[v2]))
+      e = v1 => v2
+      if graph_dir(indsᵛ¹ᵛ²) == ITensors.In
+        e = reverse(e)
+      end
+      add_edge!(g, e)
     end
   end
   for v in vertices(g)
@@ -19,15 +35,15 @@ function LightGraphs.SimpleGraph(tn::Vector{ITensor})
 end
 
 # TODO: rename indsgraph, dispatch on QNs to DiGraph
-function MetaGraphs.MetaGraph(tn::Vector{ITensor})
-  sg = SimpleGraph(tn)
+function MetaGraphs.MetaDiGraph(tn::Vector{ITensor})
+  sg = SimpleDiGraph(tn)
   mg = MetaDiGraph(sg)
   for e in edges(mg)
     indsₑ = if is_self_loop(e)
       v = src(e)
       # For self edges, the vertex itself is included as
       # a neighbor so we must exclude it.
-      uniqueinds(tn[v], tn[setdiff(neighbors(mg, v), v)]...)
+      uniqueinds(tn[v], tn[setdiff(all_neighbors(mg, v), v)]...)
     else
       commoninds(tn[src(e)], tn[dst(e)])
     end

@@ -11,6 +11,7 @@ is_self_loop(e::AbstractEdge) = src(e) == dst(e)
 any_self_loops(g::AbstractGraph) = any(is_self_loop, edges(g))
 
 get_prop_default(g::SimpleGraph, prop_default...) = last(prop_default)
+get_prop_default(g::SimpleDiGraph, prop_default...) = last(prop_default)
 
 function get_prop_default(g::AbstractGraph, prop_default...)
   prop = Base.front(prop_default)

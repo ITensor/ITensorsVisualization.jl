@@ -19,8 +19,6 @@ function get_prop_default(g::AbstractGraph, prop_default...)
   return has_prop(g, prop...) ? get_prop(g, prop...) : default
 end
 
-default_backend() = Backend("UnicodePlots")
-
 function visualize(g::AbstractGraph; backend=get_backend(), kwargs...)
   backend = isnothing(backend) ? default_backend() : Backend(backend)
   return visualize(Backend(backend), g; kwargs...)

@@ -6,8 +6,6 @@ using GLMakie
 
 include("utils/circuit_network.jl")
 
-ITensorsVisualization.set_backend!("Makie")
-
 N = 10
 layers = 10
 ndelete = 0
@@ -30,4 +28,4 @@ U, s̃ = circuit_network(gates, s)
 ψ̃ = prod(MPS(s̃))
 tn = [ψ, U..., ψ̃]
 
-@visualize tn show=(arrows=true, plevs=true) layout=layered_layout
+@visualize tn show=(arrows=true, plevs=true) layout=layered_layout backend="Makie"

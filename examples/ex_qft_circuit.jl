@@ -6,8 +6,6 @@ using PastaQ: qft
 
 include("utils/circuit_network.jl")
 
-ITensorsVisualization.set_backend!("Makie")
-
 N = 4
 gates = qft(N)
 
@@ -18,6 +16,10 @@ U, s̃ = circuit_network(gates, s)
 ψ̃ = MPS(s̃)
 tn = [ψ..., U..., ψ̃...]
 
+original_backend = ITensorsVisualization.set_backend!("Makie")
+
 @visualize tn show=(arrows=true, tags=true, plevs=true) layout=layered_layout edge=(textsize=20,)
 #@visualize tn ndims=3 show=(arrows=true, tags=true, plevs=true) edge=(textsize=20,)
 #@visualize tn backend="UnicodePlots" show=(dims=false,) layout=layered_layout
+
+ITensorsVisualization.set_backend!(original_backend)

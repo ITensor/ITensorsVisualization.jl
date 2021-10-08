@@ -11,9 +11,16 @@ end
 
 const current_backend = Ref{Union{Nothing,Backend}}(nothing)
 
-set_backend!(backend::Backend) = (current_backend[] = backend)
+set_backend!(::Nothing) = set_backend!(nothing)
+function set_backend!(backend::Backend)
+  original_backend = current_backend[]
+  current_backend[] = backend
+  return original_backend
+end
 set_backend!(backend::Union{Symbol,String}) = set_backend!(Backend(backend))
-get_backend() = current_backend[]
+
+default_backend() = Backend("UnicodePlots")
+get_backend() = isnothing(current_backend) ? default_backend() : current_backend[]
 
 function plot(::Backend{T}, args...; kwargs...) where {T}
   return error("plot not implemented for backend type $T.")

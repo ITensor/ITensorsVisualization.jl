@@ -37,14 +37,3 @@ function translate_color(::Backend{T}, color) where {T}
 end
 
 point_to_line(v1, v2) = ([v1[1], v2[1]], [v1[2], v2[2]])
-
-## function circleplot!(backend::Backend, plot; x=0, y=0, r=1, kwargs...)
-##   iszero(r) && return plot
-##   ỹ(x̃) = √(abs(r^2 - (x̃ - x)^2))
-##   ỹ⁺(x̃) = ỹ(x̃) + y
-##   ỹ⁻(x̃) = -ỹ(x̃) + y
-##   lineplot!(backend, plot, ỹ⁻, x - r, x + r; kwargs...)
-##   lineplot!(backend, plot, ỹ⁺, x - r, x + r; kwargs...)
-##   return plot
-## end
-## circleplot!(::Backend{T}, args...; kwargs...) where {T} = error("circleplot! not implemented for backend type $T.")

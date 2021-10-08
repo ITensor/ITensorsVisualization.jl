@@ -71,10 +71,6 @@ function visualize(
       draw_edge!(backend, plt, e_pos[1], e_pos[2]; color=edge_color)
     end
   end
-  ## for v in vertices(g)
-  ##   x, y = node_pos[v]
-  ##   circleplot!(backend, plt; x=x, y=y, r=vertex_size, color=vertex_color)
-  ## end
   for v in vertices(g)
     x, y = node_pos[v]
     node_label = get_prop_default(g, v, label_key, vertex_labels[v])

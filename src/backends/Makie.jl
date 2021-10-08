@@ -6,69 +6,77 @@ using GraphMakie.Makie:
   deregister_interaction!,
   register_interaction! 
 
-function nlabels_default(g::AbstractGraph; label_key=default_label_key())
-  return [get_prop_default(g, v, label_key, string(v)) for v in vertices(g)]
-end
-
-function elabels_default(g::AbstractGraph; label_key=default_label_key())
-  return [get_prop_default(g, e, label_key, string(e)) for e in edges(g)]
-end
-
-function edge_width_default(g::AbstractGraph; width_key=default_width_key(), default=5)
-  return [get_prop_default(g, e, width_key, default) for e in edges(g)]
-end
-
-_ndims(::Any) = 2
-_ndims(::NetworkLayout.AbstractLayout{N}) where {N} = N
-
-default_vertex() = (size=35, textsize=20)
-default_edge() = (textsize=30,)
-default_arrow() = (size=30,)
+fill_number(a::AbstractVector, n::Integer) = a
+fill_number(x::Number, n::Integer) = fill(x, n)
 
 function visualize(
   backend::Backend"Makie",
   g::AbstractGraph;
   interactive=true,
-  siteind_direction=Point2(0, -1),
   ndims=2,
   layout=Spring(dim=ndims),
-  vertex=default_vertex(),
-  edge=default_edge(),
-  arrow=default_arrow(),
-  show,
+  vertex=nothing,
+  visualize_macro_vertex_labels=nothing,
+  show=default_show(g),
+  edge=default_edge(g; show=merge(default_show(g), show)),
+  arrow=default_arrow(g),
+  siteind_direction=Point2(0, -1), # TODO: come up with a better name
 )
-  vertex = merge(default_vertex(), vertex)
-  edge = merge(default_edge(), edge)
-  arrow = merge(default_arrow(), arrow)
   if ismissing(Makie.current_backend[])
     error("""
       You have not loaded a backend.  Please load one (`using GLMakie` or `using CairoMakie`)
       before trying to visualize a graph.
     """)
   end
-  node_size = vertex.size isa Number ? [vertex.size for _ in 1:nv(g)] : vertex.size
+
+  # If vertex labels were set by the macro interface, use those unless
+  # labels were already set previously
+  if isnothing(vertex)
+    vertex = (labels=visualize_macro_vertex_labels,)
+  elseif !haskey(vertex, :labels)
+    vertex = merge(vertex, (labels=visualize_macro_vertex_labels,))
+  end
+
+  # Merge with default values to fill in any missing values
+  vertex = merge(default_vertex(g), vertex)
+  show = merge(default_show(g), show)
+  edge = merge(default_edge(g; show=show), edge)
+  arrow = merge(default_arrow(g), arrow)
+
   f, ax, p = graphplot(
     g;
     layout=layout,
-    node_size=node_size,
-    node_color=colorant"lightblue1",
-    nlabels=nlabels_default(g),
+
+    # vertex
+    node_size=fill_number(vertex.size, nv(g)),
+    node_color=colorant"lightblue1", # TODO: store in vertex, make a default
+    node_marker='●', # TODO: allow other options, like '◼'
+    node_attr=(; strokecolor=:black, strokewidth=3),
+
+    # vertex labels
+    nlabels = vertex.labels,
+    nlabels_textsize = vertex.textsize,
     nlabels_color=colorant"black",
-    nlabels_textsize=vertex.textsize,
     nlabels_align=(:center, :center),
-    edge_width=edge_width_default(g),
+
+    # edge
+    edge_width=edge.widths,
     edge_color=colorant"black",
-    elabels=elabels_default(g),
-    elabels_color=colorant"red",
+
+    # edge labels
+    elabels=edge.labels,
     elabels_textsize=edge.textsize,
+    elabels_color=colorant"red",
+
+    # self-edge
     selfedge_width=1e-5, # Small enough so you can't see the loop, big enough for site label to show up
     selfedge_direction=siteind_direction,
     selfedge_size=3,
+
+    # arrow
     arrow_show=show.arrows,
-    arrow_shift=0.49,
     arrow_size=arrow.size,
-    node_marker='●', #'◼',
-    node_attr=(; strokecolor=:black, strokewidth=3),
+    arrow_shift=0.49,
   )
   if _ndims(layout) == 2
     hidedecorations!(ax)

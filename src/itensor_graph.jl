@@ -1,3 +1,7 @@
+#
+# Conversion between Graphs and ITensor networks
+#
+
 hasuniqueinds(args...; kwargs...) = !isempty(uniqueinds(args...; kwargs...))
 
 function graph_dir(inds)

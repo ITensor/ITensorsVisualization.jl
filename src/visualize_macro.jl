@@ -65,17 +65,12 @@ ABC = @visualize AB * C labels = ["A*B", "C"]
 """
 macro visualize(ex::Symbol, kwargs...)
   ex_res = quote
-    visualize($(ex); vertex_labels_prefix=$(Expr(:quote, ex)), $(kwargs...))
+    visualize($(ex); vertex=(labels_prefix=$(Expr(:quote, ex)),), $(kwargs...))
   end
   return esc(ex_res)
 end
 
 macro visualize(ex::Expr, kwargs...)
-  expr_kwargs = [esc(a) for a in kwargs]
-  if any(arg -> arg.args[1].args[1] == :vertex_labels, expr_kwargs)
-    ex_res = :(visualize($(first(ex.args)), $(esc.(ex.args[2:end])...); $(esc.(kwargs)...)))
-  else
-    ex_res = :(visualize($(first(ex.args)), $(esc.(ex.args[2:end])...); vertex_labels=expr_to_string.($(ex.args[2:end])), $(esc.(kwargs)...)))
-  end
+  ex_res = :(visualize($(first(ex.args)), $(esc.(ex.args[2:end])...); visualize_macro_vertex_labels=expr_to_string.($(ex.args[2:end])), $(esc.(kwargs)...)))
   return ex_res
 end

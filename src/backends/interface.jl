@@ -20,7 +20,7 @@ end
 set_backend!(backend::Union{Symbol,String}) = set_backend!(Backend(backend))
 
 default_backend() = Backend("UnicodePlots")
-get_backend() = isnothing(current_backend) ? default_backend() : current_backend[]
+get_backend() = isnothing(current_backend[]) ? default_backend() : current_backend[]
 
 function plot(::Backend{T}, args...; kwargs...) where {T}
   return error("plot not implemented for backend type $T.")

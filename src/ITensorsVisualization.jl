@@ -31,11 +31,17 @@ using ITensors: data, QNIndex
 
 export @visualize, visualize, itensornetwork
 
+# Some general graph functionality
+include("graphs.jl")
+
 # Backends interface
 include("backends/interface.jl")
+include("defaults.jl")
 
-include("visualize_graph.jl")
+# Conversion betweens graphs and ITensor networks
 include("itensor_graph.jl")
+
+# Visualizing ITensor networks
 include("visualize_itensor.jl")
 include("visualize_macro.jl")
 

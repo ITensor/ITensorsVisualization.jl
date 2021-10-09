@@ -10,14 +10,14 @@ end
 
 function visualize(f::Union{Function,Type}, As...; execute=true, pause=false, kwargs...)
   scene = visualize(As...; kwargs...)
-  display(scene)
   if pause
     c_to_continue()
   end
   if execute
+    display(scene)
     return f(As...)
   end
-  return nothing
+  return scene
 end
 
 expr_to_string(s::Symbol) = String(s)
@@ -50,22 +50,17 @@ ABC = @visualize A * B * C
 
 # Pause to display intermediate results
 AB = @visualize A * B pause = true
-ABC = @visualize AB * C labels = ["A*B", "C"]
+ABC = @visualize AB * C vertex=(labels = ["A*B", "C"],)
 ```
 
 # Keyword arguments:
 - `pause::Bool = false`: pause after displaying the tensor network visualization.
-- `showtags::Bool = true`: show the Index tags on the edge labels of the network.
-- `showplevs::Bool = true`: show the Index prime levels on the edge labels of the network.
-- `showids::Bool = true`: show a shortened version of the Index id numbers in the edge labels of the network.
-- `showdims::Bool = true`: show the Index dimensions on the edge labels of the network.
-- `showqns::Bool = false`: show the quantum number sectors. Only available for ITensors with QNs.
-- `showarrows::Bool = all(hasqns, tensors)`: show the arrow directions on the edges of the network which correspond to the Index directions for QN indices (corresponding to contravariant and covariant spaces). Only well defined for ITensors with QNs.
-- `labels::Vector{String}`: custom tensor labels to display on the nodes of the digram. If not specified, they are determined automatically from the input to the macro.
+- `show = (dims=true, tags=false, plevs=false, ids=false, qns=false, arrows=auto)`: show various properties of an Index on the edges of the graph visualization.
+- `vertex = (labels=auto,)`: custom tensor labels to display on the vertices of the digram. If not specified, they are determined automatically from the input to the macro.
 """
 macro visualize(ex::Symbol, kwargs...)
   ex_res = quote
-    visualize($(ex); vertex=(labels_prefix=$(Expr(:quote, ex)),), $(kwargs...))
+    visualize(identity, $(ex); visualize_macro_vertex_labels_prefix=$(Expr(:quote, ex)), $(kwargs...))
   end
   return esc(ex_res)
 end

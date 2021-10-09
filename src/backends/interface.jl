@@ -11,7 +11,7 @@ end
 
 const current_backend = Ref{Union{Nothing,Backend}}(nothing)
 
-set_backend!(::Nothing) = set_backend!(nothing)
+set_backend!(::Nothing) = (current_backend[] = nothing)
 function set_backend!(backend::Backend)
   original_backend = current_backend[]
   current_backend[] = backend

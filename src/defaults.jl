@@ -2,13 +2,13 @@
 # vertex labels
 #
 
-function default_vertex(g::AbstractGraph)
-  labels_prefix = default_vertex_labels_prefix(g)
+function default_vertex(b::Backend, g::AbstractGraph)
+  labels_prefix = default_vertex_labels_prefix(b, g)
   return (
     labels_prefix=labels_prefix,
-    labels=default_vertex_labels(g, labels_prefix),
-    size=default_vertex_size(g),
-    textsize=default_vertex_textsize(g)
+    labels=default_vertex_labels(b, g, labels_prefix),
+    size=default_vertex_size(b, g),
+    textsize=default_vertex_textsize(b, g)
   )
 end
 
@@ -25,36 +25,38 @@ function subscript(n::Integer)
   return ss
 end
 
-default_vertex_labels_prefix(g) = "T"
-function default_vertex_labels(r::AbstractRange, vertex_labels_prefix=default_vertex_labels_prefix())
-  return [string(vertex_labels_prefix, subscript(n)) for n in r]
+default_vertex_labels_prefix(b::Backend, g) = "T"
+function default_vertex_labels(b::Backend, g::AbstractGraph, vertex_labels_prefix=default_vertex_labels_prefix(b))
+  return [string(vertex_labels_prefix, subscript(v)) for v in vertices(g)]
 end
-default_vertex_labels(g::AbstractGraph, vertex_labels_prefix) = default_vertex_labels(vertices(g), vertex_labels_prefix)
-default_vertex_labels(tn::AbstractArray{ITensor}, vertex_labels_prefix) = default_vertex_labels(eachindex(tn), vertex_labels_prefix)
 
-default_vertex_size(g) = 35
-default_vertex_textsize(g) = 20
+#default_vertex_labels(tn::AbstractArray{ITensor}, vertex_labels_prefix) = default_vertex_labels(eachindex(tn), vertex_labels_prefix)
+
+default_vertex_size(b::Backend, g) = 35
+default_vertex_textsize(b::Backend, g) = 20
 
 #############################################################################
 # edge
 #
 
-default_edge(g; show) = (textsize=default_edge_textsize(), widths=default_widths(g), labels=default_edge_labels(g; show=show))
+function default_edge(b::Backend, g; show)
+  return (textsize=default_edge_textsize(b), widths=default_widths(b, g), labels=default_edge_labels(b, g; show=show))
+end
 
 #############################################################################
 # edge labels
 #
 
-default_show(g::AbstractGraph) = (dims=true, tags=false, ids=false, plevs=false, qns=false, arrows=_hasqns(g))
+default_show(b::Backend, g::AbstractGraph) = (dims=true, tags=false, ids=false, plevs=false, qns=false, arrows=_hasqns(g))
 
-default_edge_textsize() = 30
+default_edge_textsize(b::Backend) = 30
 
 function edge_label(g, e; show)
   indsₑ = get_prop(g, e, :inds)
   return label_string(indsₑ; is_self_loop=is_self_loop(e), show=show)
 end
 
-function default_edge_labels(g; show)
+function default_edge_labels(b::Backend, g; show)
   return [edge_label(g, e; show=show) for e in edges(g)]
 end
 
@@ -140,7 +142,7 @@ function width(inds)
   return log2(dim(inds)) + 1
 end
 
-function default_widths(g::AbstractGraph)
+function default_widths(b::Backend, g::AbstractGraph)
   return [width(get_prop(g, e, :inds)) for e in edges(g)]
 end
 
@@ -148,7 +150,7 @@ end
 # edge arrow
 #
 
-default_arrow(g) = (size=30,)
+default_arrow(b::Backend, g) = (size=30,)
 
 #############################################################################
 # dimensions

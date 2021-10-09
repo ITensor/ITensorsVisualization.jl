@@ -1,5 +1,3 @@
-using ITensors
-using ITensorsVisualization
 using Test
 
 @testset "Examples" begin

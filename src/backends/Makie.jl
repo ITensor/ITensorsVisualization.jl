@@ -10,16 +10,17 @@ fill_number(a::AbstractVector, n::Integer) = a
 fill_number(x::Number, n::Integer) = fill(x, n)
 
 function visualize(
-  backend::Backend"Makie",
+  b::Backend"Makie",
   g::AbstractGraph;
   interactive=true,
   ndims=2,
   layout=Spring(dim=ndims),
-  vertex=nothing,
+  vertex=(;),
+  visualize_macro_vertex_labels_prefix=nothing,
   visualize_macro_vertex_labels=nothing,
-  show=default_show(g),
-  edge=default_edge(g; show=merge(default_show(g), show)),
-  arrow=default_arrow(g),
+  show=default_show(b, g),
+  edge=default_edge(b, g; show=merge(default_show(b, g), show)),
+  arrow=default_arrow(b, g),
   siteind_direction=Point2(0, -1), # TODO: come up with a better name
 )
   if ismissing(Makie.current_backend[])
@@ -31,17 +32,19 @@ function visualize(
 
   # If vertex labels were set by the macro interface, use those unless
   # labels were already set previously
-  if isnothing(vertex)
-    vertex = (labels=visualize_macro_vertex_labels,)
-  elseif !haskey(vertex, :labels)
+  if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels)
     vertex = merge(vertex, (labels=visualize_macro_vertex_labels,))
   end
 
+  if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels_prefix)
+    vertex = merge(vertex, (labels=default_vertex_labels(b, g, visualize_macro_vertex_labels_prefix),))
+  end
+
   # Merge with default values to fill in any missing values
-  vertex = merge(default_vertex(g), vertex)
-  show = merge(default_show(g), show)
-  edge = merge(default_edge(g; show=show), edge)
-  arrow = merge(default_arrow(g), arrow)
+  vertex = merge(default_vertex(b, g), vertex)
+  show = merge(default_show(b, g), show)
+  edge = merge(default_edge(b, g; show=show), edge)
+  arrow = merge(default_arrow(b, g), arrow)
 
   f, ax, p = graphplot(
     g;

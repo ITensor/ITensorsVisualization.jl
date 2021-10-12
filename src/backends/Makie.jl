@@ -1,6 +1,7 @@
 using GraphMakie
 using GraphMakie.Makie:
   Makie,
+  Figure,
   hidedecorations!,
   hidespines!,
   deregister_interaction!,
@@ -9,8 +10,15 @@ using GraphMakie.Makie:
 fill_number(a::AbstractVector, n::Integer) = a
 fill_number(x::Number, n::Integer) = fill(x, n)
 
-function visualize(
+function visualize(b::Backend"Makie", g::AbstractGraph; kwargs...)
+  f = Figure()
+  visualize!(b, f[1, 1], g; kwargs...)
+  return f
+end
+
+function visualize!(
   b::Backend"Makie",
+  f,
   g::AbstractGraph;
   interactive=true,
   ndims=2,
@@ -46,7 +54,8 @@ function visualize(
   edge = merge(default_edge(b, g; show=show), edge)
   arrow = merge(default_arrow(b, g), arrow)
 
-  f, ax, p = graphplot(
+  axis_plot = graphplot(
+    f,
     g;
     layout=layout,
 
@@ -82,14 +91,14 @@ function visualize(
     arrow_shift=0.49,
   )
   if _ndims(layout) == 2
-    hidedecorations!(ax)
-    hidespines!(ax)
+    hidedecorations!(axis_plot.axis)
+    hidespines!(axis_plot.axis)
     if interactive
-      deregister_interaction!(ax, :rectanglezoom)
-      register_interaction!(ax, :nhover, NodeHoverHighlight(p))
-      register_interaction!(ax, :ehover, EdgeHoverHighlight(p))
-      register_interaction!(ax, :ndrag, NodeDrag(p))
-      register_interaction!(ax, :edrag, EdgeDrag(p))
+      deregister_interaction!(axis_plot.axis, :rectanglezoom)
+      register_interaction!(axis_plot.axis, :nhover, NodeHoverHighlight(axis_plot.plot))
+      register_interaction!(axis_plot.axis, :ehover, EdgeHoverHighlight(axis_plot.plot))
+      register_interaction!(axis_plot.axis, :ndrag, NodeDrag(axis_plot.plot))
+      register_interaction!(axis_plot.axis, :edrag, EdgeDrag(axis_plot.plot))
     end
   end
   return f

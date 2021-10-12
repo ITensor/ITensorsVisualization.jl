@@ -29,7 +29,7 @@ using LightGraphs:
 
 using ITensors: data, QNIndex
 
-export @visualize, visualize, itensornetwork
+export @visualize, @visualize!, @visualize_noeval, @visualize_noeval!, itensornetwork
 
 # Some general graph functionality
 include("graphs.jl")
@@ -42,7 +42,6 @@ include("defaults.jl")
 include("itensor_graph.jl")
 
 # Visualizing ITensor networks
-include("visualize_itensor.jl")
 include("visualize_macro.jl")
 
 # Backends

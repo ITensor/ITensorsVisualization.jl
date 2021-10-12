@@ -10,4 +10,6 @@ function layout(g)
 end
 
 tn = itensornetwork(Grid((4, 4)); linkspaces=3)
-@visualize tn show=(arrows=true,) layout=layout backend="Makie"
+@visualize fig tn show=(arrows=true,) layout=layout backend="Makie"
+
+fig

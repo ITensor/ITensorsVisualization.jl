@@ -6,9 +6,13 @@ using Test
 
 backends = ["UnicodePlots", "Makie"]
 extensions = ["txt", "png"]
+can_displays = [true, false]
+can_inplaces = [false, true]
 @testset "Basic test for $(backends[n])" for n in eachindex(backends)
   backend = backends[n]
   extension = extensions[n]
+  can_display = can_displays[n]
+  can_inplace = can_inplaces[n]
 
   N = 10
   s(n) = Index([QN("Sz", 0) => 1, QN("Sz", 1) => 1]; tags="S=1/2,Site,n=$n")
@@ -29,29 +33,39 @@ extensions = ["txt", "png"]
   ELn0 = randomITensor(l⃗[n - 1]', h⃗[n - 1], dag(l⃗[n - 1]))
   ERn2 = randomITensor(l⃗[n + 1]', dag(h⃗[n + 1]), dag(l⃗[n + 1]))
 
-  R = @visualize ELn0 * ψn1n2 * hn1 * hn2 * ERn2 backend=backend
-  R1 = @visualize ELn0 * ψn1n2 * hn1 backend=backend
-  R2 = @visualize R1 * hn2 * ERn2 vertex=(labels=["T1", "T2", "T3"],) backend=backend
-
   tn = [ELn0, ψn1n2, hn1, hn2, ERn2]
-  tn2 = @visualize tn backend=backend
 
+  if can_display
+    R = @visualize ELn0 * ψn1n2 * hn1 * hn2 * ERn2 backend=backend
+    R1 = @visualize ELn0 * ψn1n2 * hn1 backend=backend
+    R2 = @visualize R1 * hn2 * ERn2 vertex=(labels=["T1", "T2", "T3"],) backend=backend
+    tn2 = @visualize tn backend=backend
 
-  @test R ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
-  @test R1 ≈ ELn0 * ψn1n2 * hn1
-  @test R2 ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
-  @test all(tn .== tn2)
+    @test R ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
+    @test R1 ≈ ELn0 * ψn1n2 * hn1
+    @test R2 ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
+    @test all(tn .== tn2)
+  end
 
-  sceneR = @visualize ELn0 * ψn1n2 * hn1 * hn2 * ERn2 backend=backend execute=false
-  sceneR1 = @visualize ELn0 * ψn1n2 * hn1 backend=backend execute=false
-  sceneR2 = @visualize R1 * hn2 * ERn2 vertex=(labels=["T1", "T2", "T3"],) backend=backend execute=false
+  R = @visualize figR ELn0 * ψn1n2 * hn1 * hn2 * ERn2 backend=backend
+  R1 = @visualize figR1 ELn0 * ψn1n2 * hn1 backend=backend
+  R2 = @visualize figR2 R1 * hn2 * ERn2 vertex=(labels=["T1", "T2", "T3"],) backend=backend
 
-  scene_tn = @visualize tn backend=backend execute=false
+  fig_tn = @visualize_noeval tn backend=backend
 
-  @test_reference "references/R.$extension" sceneR
-  @test_reference "references/R1.$extension" sceneR1
-  @test_reference "references/R2.$extension" sceneR2
-  @test_reference "references/tn.$extension" scene_tn
+  @test_reference "references/R.$extension" figR
+  @test_reference "references/R1.$extension" figR1
+  @test_reference "references/R2.$extension" figR2
+  @test_reference "references/tn.$extension" fig_tn
+
+  if can_inplace
+    R = @visualize fig_grid ELn0 * ψn1n2 * hn1 * hn2 * ERn2 backend=backend
+    R1 = @visualize! fig_grid[1, 2] ELn0 * ψn1n2 * hn1 backend=backend
+    R2 = @visualize! fig_grid[2, 1] R1 * hn2 * ERn2 vertex=(labels=["T1", "T2", "T3"],) backend=backend
+    @visualize_noeval! fig_grid[2, 2] tn backend=backend
+
+    @test_reference "references/grid.$extension" fig_grid
+  end
 
   @test_throws DimensionMismatch @visualize R1 * hn2 * ERn2 vertex=(labels=["T1", "T2"],) backend=backend
 end

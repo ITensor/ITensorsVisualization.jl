@@ -30,12 +30,16 @@ show = (plev=true,)
 
 original_backend = ITensorsVisualization.set_backend!("UnicodePlots")
 
-R = @visualize ELn0 * ψn1n2 * hn1 * hn2 * ERn2 show=show vertex=vertex pause=pause
+R = @visualize fig1 ELn0 * ψn1n2 * hn1 * hn2 * ERn2 show=show vertex=vertex
+pause && readline()
 @show R ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
 
 # Split it up into multiple contractions
-R1 = @visualize ELn0 * ψn1n2 * hn1 show=show vertex=vertex pause=pause
-R2 = @visualize R1 * hn2 * ERn2 show=show vertex=vertex pause=pause
+R1 = @visualize fig2 ELn0 * ψn1n2 * hn1 show=show vertex=vertex
+pause && readline()
+R2 = @visualize fig3 R1 * hn2 * ERn2 show=show vertex=vertex
 @show R2 ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
 
 ITensorsVisualization.set_backend!(original_backend)
+
+fig1, fig2, fig3

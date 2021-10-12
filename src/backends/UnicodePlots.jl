@@ -28,7 +28,7 @@ end
 supports_newlines(::Backend"UnicodePlots") = false
 
 function visualize(
-  b::Backend,
+  b::Backend"UnicodePlots",
   g::AbstractGraph;
   interactive=false, # TODO: change to `default_interactive(b)`
   ndims=2, # TODO: change to `default_ndims(b)`

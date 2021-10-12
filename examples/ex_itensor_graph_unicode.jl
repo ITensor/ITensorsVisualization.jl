@@ -4,4 +4,6 @@ using LightGraphs
 
 g = grid((5,))
 tn = itensornetwork(g; linkspaces=10, sitespaces=2)
-@visualize tn backend="UnicodePlots"
+@visualize fig tn backend="UnicodePlots"
+
+fig

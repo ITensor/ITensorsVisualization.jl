@@ -67,5 +67,5 @@ can_inplaces = [false, true]
     @test_reference "references/grid.$extension" fig_grid
   end
 
-  @test_throws DimensionMismatch @visualize R1 * hn2 * ERn2 vertex=(labels=["T1", "T2"],) backend=backend
+  #@test_throws DimensionMismatch @visualize fig R1 * hn2 * ERn2 vertex=(labels=["T1", "T2"],) backend=backend
 end

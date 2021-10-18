@@ -53,10 +53,10 @@ can_inplaces = [false, true]
 
   fig_tn = @visualize_noeval tn backend=backend
 
-  @test_reference "references/R.$extension" figR
-  @test_reference "references/R1.$extension" figR1
-  @test_reference "references/R2.$extension" figR2
-  @test_reference "references/tn.$extension" fig_tn
+  @test_reference "references/R.$extension" figR #by=psnr_equality(5)
+  @test_reference "references/R1.$extension" figR1 #by=psnr_equality(5)
+  @test_reference "references/R2.$extension" figR2 #by=psnr_equality(5)
+  @test_reference "references/tn.$extension" fig_tn #by=psnr_equality(5)
 
   if can_inplace
     R = @visualize fig_grid ELn0 * ψn1n2 * hn1 * hn2 * ERn2 backend=backend

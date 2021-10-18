@@ -2,15 +2,15 @@
 # vertex labels
 #
 
-function default_vertex(b::Backend, g::AbstractGraph)
-  labels_prefix = default_vertex_labels_prefix(b, g)
-  return (
-    labels_prefix=labels_prefix,
-    labels=default_vertex_labels(b, g, labels_prefix),
-    size=default_vertex_size(b, g),
-    textsize=default_vertex_textsize(b, g)
-  )
-end
+## function default_vertex(b::Backend, g::AbstractGraph)
+##   labels_prefix = default_vertex_labels_prefix(b, g)
+##   return (
+##     labels_prefix=labels_prefix,
+##     labels=default_vertex_labels(b, g, labels_prefix),
+##     size=default_vertex_size(b, g),
+##     textsize=default_vertex_textsize(b, g)
+##   )
+## end
 
 function subscript_char(n::Integer)
   @assert 0 ≤ n ≤ 9
@@ -39,25 +39,25 @@ default_vertex_textsize(b::Backend, g) = 20
 # edge
 #
 
-function default_edge(b::Backend, g; show)
-  return (textsize=default_edge_textsize(b), widths=default_widths(b, g), labels=default_edge_labels(b, g; show=show))
-end
+#function default_edge(b::Backend, g; show)
+#  return (textsize=default_edge_textsize(b), widths=default_widths(b, g), labels=default_edge_labels(b, g; show=show))
+#end
 
 #############################################################################
 # edge labels
 #
 
-default_show(b::Backend, g::AbstractGraph) = (dims=true, tags=false, ids=false, plevs=false, qns=false, arrows=_hasqns(g))
+#default_show(b::Backend, g::AbstractGraph) = (dims=true, tags=false, ids=false, plevs=false, qns=false, arrows=_hasqns(g))
 
 default_edge_textsize(b::Backend) = 30
 
-function edge_label(g, e; show)
+function edge_label(g, e; kwargs...)
   indsₑ = get_prop(g, e, :inds)
-  return label_string(indsₑ; is_self_loop=is_self_loop(e), show=show)
+  return label_string(indsₑ; is_self_loop=is_self_loop(e), kwargs...)
 end
 
-function default_edge_labels(b::Backend, g; show)
-  return [edge_label(g, e; show=show) for e in edges(g)]
+function default_edge_labels(b::Backend, g; kwargs...)
+  return [edge_label(g, e; kwargs...) for e in edges(g)]
 end
 
 supports_newlines(::Backend) = true
@@ -65,7 +65,18 @@ supports_newlines(::Nothing) = true
 supports_newlines(str::String) = supports_newlines(Backend(str))
 
 _hasqns(tn::Vector{ITensor}) = any(hasqns, tn)
-_hasqns(g::AbstractGraph) = hasqns(get_prop(g, first(edges(g)), :inds))
+function _hasqns(g::AbstractGraph)
+  if iszero(ne(g))
+    if has_prop(g, first(vertices(g)), :inds)
+      return hasqns(get_prop(g, first(vertices(g)), :inds))
+    else
+      return hasqns(())
+    end
+  end
+  return hasqns(get_prop(g, first(edges(g)), :inds))
+end
+
+default_arrow_show(b::Backend, g) = _hasqns(g)
 
 plevstring(i::Index) = ITensors.primestring(plev(i))
 idstring(i::Index) = string(id(i) % 1000)
@@ -86,47 +97,47 @@ function qnstring(i::QNIndex)
   return str
 end
 
-function label_string(i::Index; show)
+function label_string(i::Index; show_dims, show_tags, show_plevs, show_ids, show_qns)
   str = ""
-  if any((show.tags, show.plevs, show.ids, show.qns))
+  if any((show_tags, show_plevs, show_ids, show_qns))
     str *= "("
   end
-  if show.dims
+  if show_dims
     str *= string(dim(i))
   end
-  if show.ids
-    if show.dims
+  if show_ids
+    if show_dims
       str *= "|"
     end
     str *= idstring(i)
   end
-  if show.tags
-    if any((show.dims, show.ids))
+  if show_tags
+    if any((show_dims, show_ids))
       str *= "|"
     end
     str *= tagsstring(i)
   end
-  if any((show.tags, show.plevs, show.ids, show.qns))
+  if any((show_tags, show_plevs, show_ids, show_qns))
     str *= ")"
   end
-  if show.plevs
+  if show_plevs
     str *= plevstring(i)
   end
-  if show.qns
+  if show_qns
     str *= qnstring(i)
   end
   return str
 end
 
-function label_string(is; is_self_loop=false, newlines=true, show)
+function label_string(is; is_self_loop=false, newlines=true, show_dims, show_tags, show_plevs, show_ids, show_qns)
   str = ""
   for n in eachindex(is)
-    str *= label_string(is[n]; show)
+    str *= label_string(is[n]; show_dims, show_tags, show_plevs, show_ids, show_qns)
     if n ≠ lastindex(is)
-      if any((show.dims, show.tags, show.ids, show.qns))
+      if any((show.dims, show_tags, show_ids, show_qns))
         str *= "⊗"
       end
-      if newlines && any((show.tags, show.ids, show.qns))
+      if newlines && any((show_tags, show_ids, show_qns))
         str *= "\n"
       end
     end
@@ -142,7 +153,7 @@ function width(inds)
   return log2(dim(inds)) + 1
 end
 
-function default_widths(b::Backend, g::AbstractGraph)
+function default_edge_widths(b::Backend, g::AbstractGraph)
   return [width(get_prop(g, e, :inds)) for e in edges(g)]
 end
 
@@ -150,7 +161,7 @@ end
 # edge arrow
 #
 
-default_arrow(b::Backend, g) = (size=30,)
+default_arrow_size(b::Backend, g) = 30
 
 #############################################################################
 # dimensions

@@ -1,11 +1,6 @@
 using ITensors
 using ITensorsVisualization
 
-if isempty(ARGS)
-  error("Specify whether or not you want to pause after each visualization with the first command line argument or with `push!(ARGS, \"true\")` or `push!(ARGS, \"false\")`")
-end
-pause = parse(Bool, ARGS[1])
-
 N = 10
 sites(n) = Index([QN("Sz", 0) => 1, QN("Sz", 1) => 1]; tags="S=1/2,Site,n=$n")
 l(n) = Index([QN("Sz", 0) => 10, QN("Sz", 1) => 10]; tags="Link,l=$n")
@@ -31,12 +26,10 @@ show = (plev=true,)
 original_backend = ITensorsVisualization.set_backend!("UnicodePlots")
 
 R = @visualize fig1 ELn0 * ψn1n2 * hn1 * hn2 * ERn2 show=show vertex=vertex
-pause && readline()
 @show R ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
 
 # Split it up into multiple contractions
 R1 = @visualize fig2 ELn0 * ψn1n2 * hn1 show=show vertex=vertex
-pause && readline()
 R2 = @visualize fig3 R1 * hn2 * ERn2 show=show vertex=vertex
 @show R2 ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2
 

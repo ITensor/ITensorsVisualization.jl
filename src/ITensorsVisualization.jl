@@ -1,9 +1,11 @@
 module ITensorsVisualization
 
 using ITensors
+using AbstractTrees
 using Colors
 using GeometryBasics
 using MetaGraphs
+using LayeredLayouts
 using LinearAlgebra
 using NetworkLayout
 using SparseArrays
@@ -18,6 +20,7 @@ using LightGraphs:
   SimpleGraph,
   SimpleDiGraph,
   add_edge!,
+  add_vertex!,
   all_neighbors,
   dst,
   edges,
@@ -29,9 +32,16 @@ using LightGraphs:
 
 using ITensors: data, QNIndex
 
-export @visualize, @visualize!, @visualize_noeval, @visualize_noeval!, itensornetwork
+export
+  @visualize,
+  @visualize!,
+  @visualize_noeval,
+  @visualize_noeval!,
+  @visualize_sequence,
+  itensornetwork
 
 # Some general graph functionality
+include("layered_layout.jl")
 include("graphs.jl")
 
 # Backends interface

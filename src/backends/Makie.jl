@@ -23,12 +23,29 @@ function visualize!(
   interactive=true,
   ndims=2,
   layout=Spring(dim=ndims),
-  vertex=(;),
-  visualize_macro_vertex_labels_prefix=nothing,
-  visualize_macro_vertex_labels=nothing,
-  show=default_show(b, g),
-  edge=default_edge(b, g; show=merge(default_show(b, g), show)),
-  arrow=default_arrow(b, g),
+
+  # vertex
+  vertex_labels_prefix=default_vertex_labels_prefix(b, g),
+  vertex_labels=default_vertex_labels(b, g, vertex_labels_prefix),
+  vertex_size=default_vertex_size(b, g),
+  vertex_textsize=default_vertex_textsize(b, g),
+
+  # edge labels show
+  show_dims=true, # TODO: replace with `default_show_dims(b, g)`
+  show_tags=false,
+  show_ids=false,
+  show_plevs=false,
+  show_qns=false,
+
+  # edge
+  edge_textsize=default_edge_textsize(b),
+  edge_widths=default_edge_widths(b, g),
+  edge_labels=default_edge_labels(b, g; show_dims, show_tags, show_ids, show_plevs, show_qns),
+
+  # arrow
+  arrow_show=default_arrow_show(b, g),
+  arrow_size=default_arrow_size(b, g),
+
   siteind_direction=Point2(0, -1), # TODO: come up with a better name
 )
   if ismissing(Makie.current_backend[])
@@ -40,19 +57,19 @@ function visualize!(
 
   # If vertex labels were set by the macro interface, use those unless
   # labels were already set previously
-  if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels)
-    vertex = merge(vertex, (labels=visualize_macro_vertex_labels,))
-  end
+  #if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels)
+  #  vertex = merge(vertex, (labels=visualize_macro_vertex_labels,))
+  #end
 
-  if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels_prefix)
-    vertex = merge(vertex, (labels=default_vertex_labels(b, g, visualize_macro_vertex_labels_prefix),))
-  end
+  #if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels_prefix)
+  #  vertex = merge(vertex, (labels=default_vertex_labels(b, g, visualize_macro_vertex_labels_prefix),))
+  #end
 
   # Merge with default values to fill in any missing values
-  vertex = merge(default_vertex(b, g), vertex)
-  show = merge(default_show(b, g), show)
-  edge = merge(default_edge(b, g; show=show), edge)
-  arrow = merge(default_arrow(b, g), arrow)
+  #vertex = merge(default_vertex(b, g), vertex)
+  #show = merge(default_show(b, g), show)
+  #edge = merge(default_edge(b, g; show=show), edge)
+  #arrow = merge(default_arrow(b, g), arrow)
 
   axis_plot = graphplot(
     f,
@@ -60,24 +77,24 @@ function visualize!(
     layout=layout,
 
     # vertex
-    node_size=fill_number(vertex.size, nv(g)),
+    node_size=fill_number(vertex_size, nv(g)),
     node_color=colorant"lightblue1", # TODO: store in vertex, make a default
     node_marker='●', # TODO: allow other options, like '◼'
     node_attr=(; strokecolor=:black, strokewidth=3),
 
     # vertex labels
-    nlabels = vertex.labels,
-    nlabels_textsize = vertex.textsize,
+    nlabels=vertex_labels,
+    nlabels_textsize=vertex_textsize,
     nlabels_color=colorant"black",
     nlabels_align=(:center, :center),
 
     # edge
-    edge_width=edge.widths,
+    edge_width=edge_widths,
     edge_color=colorant"black",
 
     # edge labels
-    elabels=edge.labels,
-    elabels_textsize=edge.textsize,
+    elabels=edge_labels,
+    elabels_textsize=edge_textsize,
     elabels_color=colorant"red",
 
     # self-edge
@@ -86,8 +103,8 @@ function visualize!(
     selfedge_size=3,
 
     # arrow
-    arrow_show=show.arrows,
-    arrow_size=arrow.size,
+    arrow_show=arrow_show,
+    arrow_size=arrow_size,
     arrow_shift=0.49,
   )
   if _ndims(layout) == 2

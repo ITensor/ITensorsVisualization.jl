@@ -6,6 +6,8 @@ using PastaQ: randomcircuit
 
 include("utils/circuit_network.jl")
 
+using ITensorsVisualization: layered_layout
+
 Nx, Ny = 3, 3
 N = Nx * Ny
 gates = randomcircuit(Nx, Ny, 4; twoqubitgates = "CX", onequbitgates = "Rn", layered = false, rotated=false)

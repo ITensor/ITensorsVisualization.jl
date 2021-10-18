@@ -33,31 +33,48 @@ function visualize(
   interactive=false, # TODO: change to `default_interactive(b)`
   ndims=2, # TODO: change to `default_ndims(b)`
   layout=Spring(dim=ndims), # TODO: change to `default_layout(b, ndims)`
-  vertex=(;),
-  visualize_macro_vertex_labels_prefix=nothing,
-  visualize_macro_vertex_labels=nothing,
-  show=default_show(b, g),
-  edge=default_edge(b, g; show=merge(default_show(b, g), show)),
-  arrow=default_arrow(b, g),
+
+  # vertex
+  vertex_labels_prefix=default_vertex_labels_prefix(b, g),
+  vertex_labels=default_vertex_labels(b, g, vertex_labels_prefix),
+  vertex_size=default_vertex_size(b, g),
+  vertex_textsize=default_vertex_textsize(b, g),
+
+  # edge labels show
+  show_dims=true, # TODO: replace with `default_show_dims(b, g)`
+  show_tags=false,
+  show_ids=false,
+  show_plevs=false,
+  show_qns=false,
+
+  # edge
+  edge_textsize=default_edge_textsize(b),
+  edge_widths=default_edge_widths(b, g),
+  edge_labels=default_edge_labels(b, g; show_dims, show_tags, show_ids, show_plevs, show_qns),
+
+  # arrow
+  arrow_show=default_arrow_show(b, g),
+  arrow_size=default_arrow_size(b, g),
+
   siteind_direction=Point2(0, -1), # TODO: come up with a better name
   width=50,
   height=20,
 )
   # If vertex labels were set by the macro interface, use those unless
   # labels were already set previously
-  if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels)
-    vertex = merge(vertex, (labels=visualize_macro_vertex_labels,))
-  end
+  #if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels)
+  #  vertex = merge(vertex, (labels=visualize_macro_vertex_labels,))
+  #end
 
-  if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels_prefix)
-    vertex = merge(vertex, (labels=default_vertex_labels(b, g, visualize_macro_vertex_labels_prefix),))
-  end
+  #if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels_prefix)
+  #  vertex = merge(vertex, (labels=default_vertex_labels(b, g, visualize_macro_vertex_labels_prefix),))
+  #end
 
   # Merge with default values to fill in any missing values
-  vertex = merge(default_vertex(b, g), vertex)
-  show = merge(default_show(b, g), show)
-  edge = merge(default_edge(b, g; show=show), edge)
-  arrow = merge(default_arrow(b, g), arrow)
+  #vertex = merge(default_vertex(b, g), vertex)
+  #show = merge(default_show(b, g), show)
+  #edge = merge(default_edge(b, g; show=show), edge)
+  #arrow = merge(default_arrow(b, g), arrow)
 
   edge_color=:blue # TODO: add into `edge`
 
@@ -96,7 +113,7 @@ function visualize(
   # Add edge labels and node labels
   for (n, e) in enumerate(edges(g))
     e_pos = edge_pos[n]
-    edge_label = edge.labels[n]
+    edge_label = edge_labels[n]
     if is_self_loop(e)
       @assert e_pos[1] == e_pos[2]
       str_pos = e_pos[1] + site_vertex_shift
@@ -105,12 +122,12 @@ function visualize(
       annotate!(b, plt, mean(e_pos)..., edge_label)
     end
   end
-  if length(vertex.labels) ≠ nv(g)
+  if length(vertex_labels) ≠ nv(g)
     throw(DimensionMismatch("Number of vertex labels must equal the number of vertices. Vertex labels $(vertex.labels) of length $(length(vertex.labels)) does not equal the number of vertices $(nv(g))."))
   end
   for v in vertices(g)
     x, y = node_pos[v]
-    node_label = vertex.labels[v]
+    node_label = vertex_labels[v]
     annotate!(b, plt, x, y, node_label)
   end
   return plt

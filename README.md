@@ -25,10 +25,7 @@ The visualization makes an initial guess for the locations of the tensors (using
 
 In addition, you can pause the execution between contractions to analyze intermediate results:
 ```julia
-julia> AB = @visualize A * B pause = true; ABC = @visualize AB * C;
-Press C/c and then Enter to continue:
-c
-
+julia> AB = @visualize A * B; readline(); ABC = @visualize AB * C;
 ```
 This will first visualize the contraction `A * B`, wait for the user to respond, and then perform the contraction and continue to visualize and perform contraction `AB * C`. This is helpful for viewing and debugging multistep contractions.
 

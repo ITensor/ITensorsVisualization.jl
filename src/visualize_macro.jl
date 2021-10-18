@@ -100,6 +100,7 @@ end
 visualize(ψ::MPS; kwargs...) = visualize(data(ψ); kwargs...)
 visualize(tn::Tuple{Vararg{ITensor}}; kwargs...) = visualize(collect(tn); kwargs...)
 visualize(tn::ITensor...; kwargs...) = visualize(collect(tn); kwargs...)
+visualize(tn::Tuple{Vararg{ITensor}}, sequence::Nothing; kwargs...) = visualize(collect(tn); kwargs...)
 
 function visualize!(fig, g::AbstractGraph; backend=get_backend(), kwargs...)
   return visualize!(Backend(backend), fig, g; kwargs...)
@@ -126,9 +127,17 @@ function _visualize_sequence!(fig, tn, sequence, n; kwargs...)
   error("Not implemented")
 end
 
-function visualize_sequence(sequence)
-  graph, labels = tree_to_graph(sequence)
-  fig, _ = graphplot(graph; nlabels=string.(labels), layout=layered_layout)
+function sequence_labels(sequence, all_sequences, vertex_labels)
+  traversal = sequence_traversal(sequence)
+  labels_dict = contract_dict(vertex_labels, sequence, traversal)
+  all_labels = [labels_dict[s] for s in all_sequences]
+  return all_labels
+end
+
+function visualize_sequence(sequence, vertex_labels)
+  graph, all_sequences = tree_to_graph(sequence)
+  all_labels = sequence_labels(sequence, all_sequences, vertex_labels)
+  fig, _ = graphplot(graph; nlabels=all_labels, layout=layered_layout)
   return fig
 end
 
@@ -140,34 +149,34 @@ end
 function visualize_sequence(
   f::Union{Function,Type},
   tn::Vector{ITensor},
+  sequence::Nothing;
+  kwargs...
+)
+  return visualize_sequence(f, tn, default_sequence(tn); kwargs...)
+end
+
+function visualize_sequence(
+  f::Union{Function,Type},
+  tn::Vector{ITensor},
   sequence=default_sequence(tn);
   kwargs...
 )
-
-  @show kwargs
-
-  # TODO: use `vertex_labels` for `vertex_labels_prefix` extracted from macro.
   N = length(tn)
+
+  # TODO: clean this up a bit
   vertex_labels_prefix = get(kwargs, :vertex_labels_prefix, default_vertex_labels_prefix(Backend("Makie"), MetaDiGraph(tn)))
-  labels = default_vertex_labels(Backend(""), MetaDiGraph(tn), vertex_labels_prefix)
+  vertex_labels = default_vertex_labels(Backend(""), MetaDiGraph(tn), vertex_labels_prefix)
 
-  #graph, labels = tree_to_graph(sequence)
-  #fig = Figure()
-  #graphplot(fig[1, 1], graph; nlabels=string.(labels), layout=layered_layout)
-  fig = visualize_sequence(sequence)
+  fig = visualize_sequence(sequence, vertex_labels)
 
-  visualize!(fig[1, 2], tn; vertex=(labels=labels,), kwargs...)
-  @show sequence
-  @show labels
+  visualize!(fig[1, 2], tn; vertex_labels=vertex_labels, kwargs...)
 
   traversal = sequence_traversal(sequence)
-  labels_sequence = contraction_sequence(labels, sequence, traversal)
+  labels_sequence = contraction_sequence(vertex_labels, sequence, traversal)
   tn_sequence = contraction_sequence(tn, sequence, traversal)
 
-  display(labels_sequence)
-
   for n in 1:(length(tn_sequence) - 1)
-    visualize!(fig[1, n + 2], tn_sequence[n]; vertex=(labels=labels_sequence[n],), kwargs...)
+    visualize!(fig[1, n + 2], tn_sequence[n]; vertex_labels=labels_sequence[n], kwargs...)
   end
 
   return fig
@@ -215,36 +224,65 @@ end
 
 function args_kwargs(ex::Vector)
   kwargs = has_kwargs(ex) ? get_kwargs(ex) : :()
-  args = has_kwargs(ex) ? esc.(ex[2:end]) : esc.(ex)
+  args = has_kwargs(ex) ? ex[2:end] : ex
   return args, kwargs
+end
+
+function function_args_kwargs(ex::Symbol)
+  func = :identity
+  args = [ex]
+  kwargs = :()
+  iscollection = false
+  return func, args, kwargs, iscollection
 end
 
 function function_args_kwargs(ex::Expr)
   if ex.head == :call
     func = first(ex.args)
     args, kwargs = args_kwargs(ex.args[2:end])
+    iscollection = true
+  elseif ex.head == :ref
+    #func, args, kwargs, iscollection = function_args_kwargs(Symbol(ex.args))
+    func = :identity
+    args = [ex]
+    kwargs = :()
+    iscollection = false
+  else
+    dump(ex)
+    error("Visualizing expression $ex not supported right now.")
   end
-  return func, args, kwargs
+  return func, args, kwargs, iscollection
 end
 
 expr_to_string(s::Symbol) = String(s)
 expr_to_string(ex::Expr) = String(repr(ex))[3:(end - 1)]
 
-function visualize_expr(vis_func, ex::Expr, vis_kwargs::Expr...)
-  func, args, kwargs = function_args_kwargs(ex)
+# Take the symbols of the arguments and output
+# the labels if there are multiple inputs or
+# the prefix for the labels if there is only
+# one input.
+function vertex_labels_kwargs(args, iscollection)
+  if iscollection && isone(length(args))
+    vertex_labels_kw = :vertex_labels_prefix
+    vertex_labels_arg = string(only(args))
+  else
+    vertex_labels_kw = :vertex_labels
+    vertex_labels_arg = string.(args)
+  end
+  return vertex_labels_kw, vertex_labels_arg
+end
+
+function visualize_expr(vis_func, ex::Union{Symbol,Expr}, vis_kwargs::Expr...)
+  func, args, kwargs, iscollection = function_args_kwargs(ex)
   sequence = get_kwarg(kwargs, :sequence)
 
-  # TODO: make this more general.
-  # For collection of ITensors, extract vertex_labels
   # TODO: Use
   # julia> merge((x=1, y=1, z=1), (x=2, y=2))
   # (x = 2, y = 2, z = 1)
 
-  symbol = string(only(only(args).args))
-  symbol_kwarg = :vertex_labels_prefix
-
+  vertex_labels_kw, vertex_labels_arg = vertex_labels_kwargs(args, iscollection)
   e = quote
-    $(vis_func)($(func), ($(args...),), $(sequence); $symbol_kwarg=$symbol, $(esc.(vis_kwargs)...))
+    $(vis_func)($(func), ($(esc.(args)...),), $(sequence); $vertex_labels_kw=$vertex_labels_arg, $(esc.(vis_kwargs)...))
   end
   return e
 end
@@ -350,7 +388,7 @@ readline()
 """
 macro visualize(fig::Symbol, ex::Symbol, kwargs::Expr...)
   e = quote
-    $(esc(fig)) = $(visualize_symbol(ex, kwargs...))
+    $(esc(fig)) = $(visualize_expr(visualize, ex, kwargs...))
     $(esc(ex))
   end
   return e
@@ -366,7 +404,7 @@ end
 
 macro visualize(ex::Symbol)
   e = quote
-    display($(visualize_symbol(ex)))
+    display($(visualize_expr(visualize, ex)))
     $(esc(ex))
   end
   return e
@@ -374,15 +412,17 @@ end
 
 macro visualize(ex_or_fig::Symbol, ex_or_kwarg::Expr, last_kwargs::Expr...)
   if ex_or_kwarg.head == :(=)
-    # The first input is the collection to visualize (no figure output binding specified)
+    # The second input is a keyword argument which means that the
+    # first input is the collection to visualize (no figure output binding specified)
     ex = ex_or_fig
     kwargs = (ex_or_kwarg, last_kwargs...)
     e = quote
-      display($(visualize_symbol(ex, kwargs...)))
+      display($(visualize_expr(visualize, ex, kwargs...)))
       $(esc(ex))
     end
   else
-    # The first input is the binding for the figure output, the second is the expression
+    # The second input is not a keyword argument which means that the
+    # first input is the binding for the figure output, the second is the expression
     # to visualize
     fig = ex_or_fig
     ex = ex_or_kwarg
@@ -413,7 +453,7 @@ end
 
 macro visualize_noeval(ex::Symbol, kwargs::Expr...)
   e = quote
-    $(visualize_symbol(ex, kwargs...))
+    $(visualize_expr(visualize, ex, kwargs...))
   end
   return e
 end
@@ -439,9 +479,17 @@ macro visualize_noeval!(fig, ex::Expr, kwargs::Expr...)
   return e
 end
 
-macro visualize_sequence(fig, ex::Expr, kwargs::Expr...)
+macro visualize_sequence(fig::Symbol, ex::Expr, kwargs::Expr...)
   e = quote
     $(esc(fig)) = $(visualize_expr(visualize_sequence, ex, kwargs...))
+    $(esc(ex))
+  end
+  return e
+end
+
+macro visualize_sequence(ex::Expr, kwargs::Expr...)
+  e = quote
+    display($(visualize_expr(visualize_sequence, ex, kwargs...)))
     $(esc(ex))
   end
   return e

@@ -71,6 +71,10 @@ function visualize!(
   #edge = merge(default_edge(b, g; show=show), edge)
   #arrow = merge(default_arrow(b, g), arrow)
 
+  if length(vertex_labels) ≠ nv(g)
+    error("$(length(vertex_labels)) vertex labels $(vertex_labels) were specified but there are $(nv(g)) tensors in the diagram, please specify the correct number of labels.")
+  end
+
   axis_plot = graphplot(
     f,
     g;

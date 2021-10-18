@@ -32,7 +32,7 @@ end
 
 #default_vertex_labels(tn::AbstractArray{ITensor}, vertex_labels_prefix) = default_vertex_labels(eachindex(tn), vertex_labels_prefix)
 
-default_vertex_size(b::Backend, g) = 35
+default_vertex_size(b::Backend, g) = 60
 default_vertex_textsize(b::Backend, g) = 20
 
 #############################################################################
@@ -134,7 +134,7 @@ function label_string(is; is_self_loop=false, newlines=true, show_dims, show_tag
   for n in eachindex(is)
     str *= label_string(is[n]; show_dims, show_tags, show_plevs, show_ids, show_qns)
     if n ≠ lastindex(is)
-      if any((show.dims, show_tags, show_ids, show_qns))
+      if any((show_dims, show_tags, show_ids, show_qns))
         str *= "⊗"
       end
       if newlines && any((show_tags, show_ids, show_qns))

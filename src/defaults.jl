@@ -2,16 +2,6 @@
 # vertex labels
 #
 
-## function default_vertex(b::Backend, g::AbstractGraph)
-##   labels_prefix = default_vertex_labels_prefix(b, g)
-##   return (
-##     labels_prefix=labels_prefix,
-##     labels=default_vertex_labels(b, g, labels_prefix),
-##     size=default_vertex_size(b, g),
-##     textsize=default_vertex_textsize(b, g)
-##   )
-## end
-
 function subscript_char(n::Integer)
   @assert 0 ≤ n ≤ 9
   return Char(0x2080 + n)
@@ -30,24 +20,18 @@ function default_vertex_labels(b::Backend, g::AbstractGraph, vertex_labels_prefi
   return [string(vertex_labels_prefix, subscript(v)) for v in vertices(g)]
 end
 
-#default_vertex_labels(tn::AbstractArray{ITensor}, vertex_labels_prefix) = default_vertex_labels(eachindex(tn), vertex_labels_prefix)
-
 default_vertex_size(b::Backend, g) = 60
 default_vertex_textsize(b::Backend, g) = 20
-
-#############################################################################
-# edge
-#
-
-#function default_edge(b::Backend, g; show)
-#  return (textsize=default_edge_textsize(b), widths=default_widths(b, g), labels=default_edge_labels(b, g; show=show))
-#end
 
 #############################################################################
 # edge labels
 #
 
-#default_show(b::Backend, g::AbstractGraph) = (dims=true, tags=false, ids=false, plevs=false, qns=false, arrows=_hasqns(g))
+default_show_dims(b::Backend, g::AbstractGraph) = true
+default_show_tags(b::Backend, g::AbstractGraph) = false
+default_show_ids(b::Backend, g::AbstractGraph) = false
+default_show_plevs(b::Backend, g::AbstractGraph) = false
+default_show_qns(b::Backend, g::AbstractGraph) = false
 
 default_edge_textsize(b::Backend) = 30
 

@@ -21,10 +21,9 @@ tn = [prod(ψ), U..., prod(ψ̃)]
 
 original_backend = ITensorsVisualization.set_backend!("Makie")
 
-@visualize fig1 tn show=(arrows=true, plevs=true) layout=layered_layout edge=(textsize=20,)
-@visualize fig2 tn ndims=3 show=(arrows=true, plevs=true) edge=(textsize=10,)
-@visualize fig3 tn backend="UnicodePlots" show=(dims=false,) layout=layered_layout
+@visualize fig tn arrow_show=true show_plevs=true layout=layered_layout edge_textsize=20
+@visualize! fig[2, 1] tn ndims=3 arrow_show=true show_plevs=true edge_textsize=10
 
 ITensorsVisualization.set_backend!(original_backend)
 
-fig1, fig2, fig3
+fig

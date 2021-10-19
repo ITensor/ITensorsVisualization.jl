@@ -18,10 +18,9 @@ tn = [ψ..., U..., ψ̃...]
 
 original_backend = ITensorsVisualization.set_backend!("Makie")
 
-@visualize fig1 tn show=(arrows=true, tags=true, plevs=true) layout=layered_layout edge=(textsize=20,)
-@visualize fig2 tn ndims=3 show=(arrows=true, tags=true, plevs=true) edge=(textsize=20,)
-@visualize fig3 tn backend="UnicodePlots" show=(dims=false,) layout=layered_layout
+@visualize fig tn arrow_show=true show_tags=true show_plevs=true edge_textsize=20 layout=layered_layout
+@visualize! fig[1, 2] tn ndims=3 show_plevs=true edge_textsize=20
 
 ITensorsVisualization.set_backend!(original_backend)
 
-fig1, fig2, fig3
+fig

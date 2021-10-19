@@ -12,5 +12,5 @@ N = 5
 g = Graph(N, N)
 A = itensornetwork(g; linkspaces=5)
 sequence = optimal_contraction_sequence(A)
-R = @visualize_sequence fig ITensors.contract(A; sequence=sequence) show=(tags=true,) backend="Makie"
+R = @visualize_sequence fig ITensors.contract(A; sequence=sequence) show_tags=true backend="Makie"
 fig

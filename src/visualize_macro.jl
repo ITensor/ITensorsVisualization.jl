@@ -90,17 +90,21 @@ end
 
 # Visualization function interface. Ultimately calls a beckend.
 
-function visualize(g::AbstractGraph; backend=get_backend(), kwargs...)
+function visualize(g::AbstractGraph, sequence=nothing; backend=get_backend(), kwargs...)
+  # TODO: do something with the sequence (show sequence, add labels indicating sequence, etc.)
   return visualize(Backend(backend), g; kwargs...)
 end
 
-function visualize(tn::Vector{ITensor}; kwargs...)
-  return visualize(MetaDiGraph(tn); kwargs...)
+function visualize(tn::Vector{ITensor}, sequence=nothing; kwargs...)
+  return visualize(MetaDiGraph(tn), sequence; kwargs...)
 end
-visualize(ψ::MPS; kwargs...) = visualize(data(ψ); kwargs...)
-visualize(tn::Tuple{Vararg{ITensor}}; kwargs...) = visualize(collect(tn); kwargs...)
+
+function visualize(tn::Tuple{Vector{ITensor}}, args...; kwargs...)
+  return visualize(only(tn), args...; kwargs...)
+end
+visualize(ψ::MPS, args...; kwargs...) = visualize(data(ψ), args...; kwargs...)
+visualize(tn::Tuple{Vararg{ITensor}}, args...; kwargs...) = visualize(collect(tn), args...; kwargs...)
 visualize(tn::ITensor...; kwargs...) = visualize(collect(tn); kwargs...)
-visualize(tn::Tuple{Vararg{ITensor}}, sequence::Nothing; kwargs...) = visualize(collect(tn); kwargs...)
 
 function visualize!(fig, g::AbstractGraph; backend=get_backend(), kwargs...)
   return visualize!(Backend(backend), fig, g; kwargs...)
@@ -114,7 +118,7 @@ visualize!(fig, tn::Tuple{Vararg{ITensor}}; kwargs...) = visualize!(fig, collect
 visualize!(fig, tn::ITensor...; kwargs...) = visualize!(fig, collect(tn); kwargs...)
 
 function visualize(f::Union{Function,Type}, As...; kwargs...)
-  # TODO: specialize of the function type. Also accept a general collection.
+  # TODO: specialize on the function type. Also accept a general collection.
   return visualize(As...; kwargs...)
 end
 
@@ -232,7 +236,7 @@ function function_args_kwargs(ex::Symbol)
   func = :identity
   args = [ex]
   kwargs = :()
-  iscollection = false
+  iscollection = true
   return func, args, kwargs, iscollection
 end
 
@@ -275,54 +279,17 @@ end
 function visualize_expr(vis_func, ex::Union{Symbol,Expr}, vis_kwargs::Expr...)
   func, args, kwargs, iscollection = function_args_kwargs(ex)
   sequence = get_kwarg(kwargs, :sequence)
-
-  # TODO: Use
-  # julia> merge((x=1, y=1, z=1), (x=2, y=2))
-  # (x = 2, y = 2, z = 1)
-
   vertex_labels_kw, vertex_labels_arg = vertex_labels_kwargs(args, iscollection)
+  # Merge labels kwarg with kwargs
+  vis_kwargs_dict = Dict([vis_kwarg.args[1] => vis_kwarg.args[2] for vis_kwarg in vis_kwargs])
+  vertex_labels_kwarg_dict = Dict(vertex_labels_kw => vertex_labels_arg)
+  merged_kwargs_dict = merge(vertex_labels_kwarg_dict, vis_kwargs_dict)
+  merged_kwargs_expr = [:($k = $v) for (k, v) in pairs(merged_kwargs_dict)]
   e = quote
-    $(vis_func)($(func), ($(esc.(args)...),), $(sequence); $vertex_labels_kw=$vertex_labels_arg, $(esc.(vis_kwargs)...))
+    $(vis_func)($(func), ($(esc.(args)...),), $(sequence); $(esc.(merged_kwargs_expr)...))
   end
   return e
 end
-
-##     func_args = ex.args
-##     if has_kwargs(ex)
-##       @show get_sequence_kwarg(ex)
-##       seq = get_sequence_kwarg(ex)
-##       if !isnothing(seq)
-##         @show esc(seq)
-##         e = quote
-##           $(vis_func)($(first(ex.args)), $(esc(ex.args[2])), $(esc(seq)); vertex_labels_prefix=$(Expr(:quote, ex.args[2])), $(esc.(kwargs)...))
-##         end
-##       end
-##       error("TEST")
-##     end
-
-## function visualize_expr(vis_func, ex::Expr, kwargs::Expr...)
-##   if ex.head == :call
-##     if length(ex.args) == 2
-##       # For inputs like `*(tn)` or `contract(tn)`
-##       e = quote
-##         $(vis_func)($(first(ex.args)), $(esc(ex.args[2])); vertex_labels_prefix=$(Expr(:quote, ex.args[2])), $(esc.(kwargs)...))
-##       end
-##     else
-##       # For inputs like `A * B` or `contract(A, B)`
-##       e = quote
-##         $(vis_func)($(first(ex.args)), $(esc.(ex.args[2:end])...); vertex_labels=$(expr_to_string.(ex.args[2:end])), $(esc.(kwargs)...))
-##       end
-##     end
-##   elseif ex.head == :vect
-##     # For inputs like `[A, B]`
-##     e = quote
-##       $(vis_func)(collect, $(esc.(ex.args)...); vertex_labels=$(expr_to_string.(ex.args)), $(esc.(kwargs)...))
-##     end
-##   else
-##     error("Visualizing expression $ex not supported.")
-##   end
-##   return e
-## end
 
 function visualize_expr!(fig, ex::Expr, kwargs::Expr...)
   if ex.head == :call

@@ -2,6 +2,7 @@ using GraphMakie
 using GraphMakie.Makie:
   Makie,
   Figure,
+  contents,
   hidedecorations!,
   hidespines!,
   deregister_interaction!,
@@ -18,7 +19,17 @@ end
 
 function visualize!(
   b::Backend"Makie",
-  f,
+  f::Figure,
+  g::AbstractGraph;
+  kwargs...
+)
+  visualize!(b, f[1, 1], g; kwargs...)
+  return f
+end
+
+function visualize!(
+  b::Backend"Makie",
+  f::Makie.GridPosition,
   g::AbstractGraph;
   interactive=true,
   ndims=2,
@@ -31,11 +42,11 @@ function visualize!(
   vertex_textsize=default_vertex_textsize(b, g),
 
   # edge labels show
-  show_dims=true, # TODO: replace with `default_show_dims(b, g)`
-  show_tags=false,
-  show_ids=false,
-  show_plevs=false,
-  show_qns=false,
+  show_dims=default_show_dims(b, g),
+  show_tags=default_show_tags(b, g),
+  show_ids=default_show_ids(b, g),
+  show_plevs=default_show_plevs(b, g),
+  show_qns=default_show_qns(b, g),
 
   # edge
   edge_textsize=default_edge_textsize(b),
@@ -55,29 +66,11 @@ function visualize!(
     """)
   end
 
-  # If vertex labels were set by the macro interface, use those unless
-  # labels were already set previously
-  #if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels)
-  #  vertex = merge(vertex, (labels=visualize_macro_vertex_labels,))
-  #end
-
-  #if !haskey(vertex, :labels) && !isnothing(visualize_macro_vertex_labels_prefix)
-  #  vertex = merge(vertex, (labels=default_vertex_labels(b, g, visualize_macro_vertex_labels_prefix),))
-  #end
-
-  # Merge with default values to fill in any missing values
-  #vertex = merge(default_vertex(b, g), vertex)
-  #show = merge(default_show(b, g), show)
-  #edge = merge(default_edge(b, g; show=show), edge)
-  #arrow = merge(default_arrow(b, g), arrow)
-
   if length(vertex_labels) ≠ nv(g)
-    error("$(length(vertex_labels)) vertex labels $(vertex_labels) were specified but there are $(nv(g)) tensors in the diagram, please specify the correct number of labels.")
+    throw(DimensionMismatch("$(length(vertex_labels)) vertex labels $(vertex_labels) were specified but there are $(nv(g)) tensors in the diagram, please specify the correct number of labels."))
   end
 
-  axis_plot = graphplot(
-    f,
-    g;
+  graphplot_kwargs = (;
     layout=layout,
 
     # vertex
@@ -111,7 +104,17 @@ function visualize!(
     arrow_size=arrow_size,
     arrow_shift=0.49,
   )
-  if _ndims(layout) == 2
+
+  overwrite_axis = false
+  if isempty(contents(f))
+    axis_plot = graphplot(f, g; graphplot_kwargs...)
+  else
+    @warn "Visualizing a graph in the same axis as an existing graph. This feature is experimental and some features like interactivity might now work"
+    overwrite_axis = true
+    graphplot!(f, g; graphplot_kwargs...)
+  end
+
+  if !overwrite_axis && (_ndims(layout) == 2)
     hidedecorations!(axis_plot.axis)
     hidespines!(axis_plot.axis)
     if interactive

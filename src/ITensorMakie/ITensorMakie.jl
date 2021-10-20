@@ -41,23 +41,16 @@ function visualize!(
   vertex_size=default_vertex_size(b, g),
   vertex_textsize=default_vertex_textsize(b, g),
 
-  # edge labels show
-  show_dims=default_show_dims(b, g),
-  show_tags=default_show_tags(b, g),
-  show_ids=default_show_ids(b, g),
-  show_plevs=default_show_plevs(b, g),
-  show_qns=default_show_qns(b, g),
-
   # edge
   edge_textsize=default_edge_textsize(b),
   edge_widths=default_edge_widths(b, g),
-  edge_labels=default_edge_labels(b, g; show_dims, show_tags, show_ids, show_plevs, show_qns),
+  edge_labels=default_edge_labels(b, g),
 
   # arrow
   arrow_show=default_arrow_show(b, g),
   arrow_size=default_arrow_size(b, g),
 
-  siteind_direction=Point2(0, -1), # TODO: come up with a better name
+  siteinds_direction=default_siteinds_direction(b, g),
 )
   if ismissing(Makie.current_backend[])
     error("""
@@ -65,6 +58,8 @@ function visualize!(
       before trying to visualize a graph.
     """)
   end
+
+  edge_labels = ITensorsVisualization.edge_labels(edge_labels, g)
 
   if length(vertex_labels) ≠ nv(g)
     throw(DimensionMismatch("$(length(vertex_labels)) vertex labels $(vertex_labels) were specified but there are $(nv(g)) tensors in the diagram, please specify the correct number of labels."))
@@ -96,7 +91,7 @@ function visualize!(
 
     # self-edge
     selfedge_width=1e-5, # Small enough so you can't see the loop, big enough for site label to show up
-    selfedge_direction=siteind_direction,
+    selfedge_direction=siteinds_direction,
     selfedge_size=3,
 
     # arrow

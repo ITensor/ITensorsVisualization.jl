@@ -11,8 +11,7 @@ using NetworkLayout
 using SparseArrays
 using Statistics
 
-# Avoid conflict with `ITensors.contract`
-# (Graphs also exports `contract`).
+# Avoid conflict between `Graphs.contract` and `ITensors.contract`
 using Graphs:
   Graphs,
   AbstractEdge,
@@ -38,14 +37,15 @@ export
   @visualize_noeval,
   @visualize_noeval!,
   @visualize_sequence,
-  itensornetwork
+  itensornetwork,
+  IndexLabels
 
 # Some general graph functionality
 include("layered_layout.jl")
 include("graphs.jl")
 
 # Backends interface
-include("backends/interface.jl")
+include("backends_interface.jl")
 include("defaults.jl")
 
 # Conversion betweens graphs and ITensor networks
@@ -55,7 +55,8 @@ include("itensor_graph.jl")
 include("visualize_macro.jl")
 
 # Backends
-include("backends/UnicodePlots.jl")
-include("backends/Makie.jl")
+# TODO: split off into seperate packages
+include("ITensorUnicodePlots/ITensorUnicodePlots.jl")
+include("ITensorMakie/ITensorMakie.jl")
 
 end

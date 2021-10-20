@@ -28,6 +28,7 @@ U, s̃ = circuit_network(gates, s)
 ψ̃ = prod(MPS(s̃))
 tn = [ψ, U..., ψ̃]
 
-@visualize fig tn arrow_show=true show_plevs=true layout=layered_layout backend="Makie"
+edge_labels = IndexLabels(; plevs=true)
+@visualize fig tn arrow_show=true edge_labels=edge_labels layout=layered_layout backend="Makie"
 
 fig

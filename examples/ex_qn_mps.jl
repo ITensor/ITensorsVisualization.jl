@@ -8,6 +8,7 @@ orthogonalize!(ψ, 2)
 ψdag = prime(linkinds, dag(ψ))
 tn = [ψ..., ψdag...]
 
-@visualize fig tn show_qns=true show_plevs=true edge_textsize=20 backend="Makie"
+edge_labels = IndexLabels(; plevs=true, qns=true)
+@visualize fig tn edge_labels=edge_labels edge_textsize=20 backend="Makie"
 
 fig

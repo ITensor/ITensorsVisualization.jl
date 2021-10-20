@@ -1,4 +1,6 @@
 using ITensors
+# TODO: change to
+# using ITensorGLMakie
 using ITensorsVisualization
 using Graphs
 using GLMakie
@@ -10,7 +12,8 @@ using ITensorsVisualization: layered_layout
 
 Nx, Ny = 3, 3
 N = Nx * Ny
-gates = randomcircuit(Nx, Ny, 4; twoqubitgates = "CX", onequbitgates = "Rn", layered = false, rotated=false)
+# TODO: change to (Nx, Ny) with PastaQ v0.0.16
+gates = randomcircuit(Nx, Ny; depth=4, twoqubitgates="CX", onequbitgates="Rn", layered=false, rotated=false)
 
 s = siteinds("Qubit", N)
 
@@ -21,8 +24,9 @@ tn = [prod(ψ), U..., prod(ψ̃)]
 
 original_backend = ITensorsVisualization.set_backend!("Makie")
 
-@visualize fig tn arrow_show=true show_plevs=true layout=layered_layout edge_textsize=20
-@visualize! fig[2, 1] tn ndims=3 arrow_show=true show_plevs=true edge_textsize=10
+edge_labels = IndexLabels(; plevs=true)
+@visualize fig tn arrow_show=true edge_labels=edge_labels layout=layered_layout edge_textsize=20
+@visualize! fig[2, 1] tn ndims=3 arrow_show=true edge_labels=edge_labels edge_textsize=10
 
 ITensorsVisualization.set_backend!(original_backend)
 

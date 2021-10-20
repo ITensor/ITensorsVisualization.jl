@@ -4,6 +4,7 @@ Backend(b::Backend) = b
 Backend(s::AbstractString) = Backend{Symbol(s)}()
 Backend(s::Symbol) = Backend{s}()
 backend(::Backend{N}) where {N} = N
+Backend() = Backend{Symbol()}()
 
 macro Backend_str(s)
   return Backend{Symbol(s)}

@@ -25,7 +25,8 @@ function annotate!(::Backend"UnicodePlots", plot, x, y, str)
   return plot
 end
 
-supports_newlines(::Backend"UnicodePlots") = false
+# Don't use new lines by default, it messes up the formatting
+default_newlines(::Backend"UnicodePlots") = false
 
 function visualize(
   b::Backend"UnicodePlots",
@@ -40,27 +41,24 @@ function visualize(
   vertex_size=default_vertex_size(b, g),
   vertex_textsize=default_vertex_textsize(b, g),
 
-  # edge labels show
-  show_dims=default_show_dims(b, g), 
-  show_tags=default_show_tags(b, g),
-  show_ids=default_show_ids(b, g),
-  show_plevs=default_show_plevs(b, g),
-  show_qns=default_show_qns(b, g),
-
   # edge
   edge_textsize=default_edge_textsize(b),
   edge_widths=default_edge_widths(b, g),
-  edge_labels=default_edge_labels(b, g; show_dims, show_tags, show_ids, show_plevs, show_qns),
+  edge_labels=default_edge_labels(b, g),
 
   # arrow
   arrow_show=default_arrow_show(b, g),
   arrow_size=default_arrow_size(b, g),
 
-  siteind_direction=Point2(0, -1), # TODO: come up with a better name
+  # siteinds direction
+  siteinds_direction=default_siteinds_direction(b, g),
+
   width=50,
   height=20,
 )
   edge_color = :blue # TODO: make into keyword argument
+
+  edge_labels = ITensorsVisualization.edge_labels(edge_labels, g)
 
   node_pos = layout(g)
   edge_pos = [node_pos[src(edge)] => node_pos[dst(edge)] for edge in edges(g)]
@@ -71,15 +69,14 @@ function visualize(
 
   #vertex_size = vertex_size * (xmax - xmin)
 
-  xscale = 0.5 * (xmax - xmin)
-  yscale = max(0.5 * (ymax - ymin), 0.01 * xscale)
+  xscale = 0.1 * (xmax - xmin)
+  yscale = max(0.2 * (ymax - ymin), 0.1 * xscale)
   xlim = [xmin - xscale, xmax + xscale]
   ylim = [ymin - yscale, ymax + yscale]
 
-  # Good for periodic MPS
-  site_vertex_shift = -Point(0, 0.2 * abs(ylim[2] - ylim[1]))
+  site_vertex_shift = siteinds_direction
 
-  # Good for open boundary MPS
+  #site_vertex_shift = -Point(0, 0.2 * abs(ylim[2] - ylim[1]))
   #site_vertex_shift = -Point(0, 0.001 * (xmax - xmin))
 
   # Initialize the plot
@@ -100,7 +97,7 @@ function visualize(
     edge_label = edge_labels[n]
     if is_self_loop(e)
       @assert e_pos[1] == e_pos[2]
-      str_pos = e_pos[1] + site_vertex_shift
+      str_pos = e_pos[1] + 0.5 * site_vertex_shift
       annotate!(b, plt, str_pos..., edge_label)
     else
       annotate!(b, plt, mean(e_pos)..., edge_label)

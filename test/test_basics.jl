@@ -7,8 +7,7 @@ using Test
 backends = ["UnicodePlots", "Makie"]
 extensions = ["txt", "png"]
 can_displays = [true, false]
-# TODO: turn on in-place
-can_inplaces = [false, false]
+can_inplaces = [false, true]
 @testset "Basic test for $(backends[n])" for n in eachindex(backends)
   backend = backends[n]
   extension = extensions[n]
@@ -54,16 +53,17 @@ can_inplaces = [false, false]
 
   fig_tn = @visualize_noeval tn backend=backend
 
-  @test_reference "references/R.$extension" figR #by=psnr_equality(5)
-  @test_reference "references/R1.$extension" figR1 #by=psnr_equality(5)
-  @test_reference "references/R2.$extension" figR2 #by=psnr_equality(5)
-  @test_reference "references/tn.$extension" fig_tn #by=psnr_equality(5)
+  by = extension == "png" ? psnr_equality(5) : isequal
+
+  @test_reference "references/R.$extension" figR by=by
+  @test_reference "references/R1.$extension" figR1 by=by
+  @test_reference "references/R2.$extension" figR2 by=by
+  @test_reference "references/tn.$extension" fig_tn by=by
 
   if can_inplace
     R = @visualize fig_grid ELn0 * ψn1n2 * hn1 * hn2 * ERn2 backend=backend
     R1 = @visualize! fig_grid[1, 2] ELn0 * ψn1n2 * hn1 backend=backend
-    # XXX: add this back
-    #R2 = @visualize! fig_grid[2, 1] R1 * hn2 * ERn2 vertex_labels=["T1", "T2", "T3"] backend=backend
+    R2 = @visualize! fig_grid[2, 1] R1 * hn2 * ERn2 vertex_labels=["T1", "T2", "T3"] backend=backend
     @visualize_noeval! fig_grid[2, 2] tn backend=backend
 
     @test_reference "references/grid.$extension" fig_grid

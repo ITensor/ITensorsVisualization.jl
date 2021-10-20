@@ -110,12 +110,19 @@ function visualize!(fig, g::AbstractGraph; backend=get_backend(), kwargs...)
   return visualize!(Backend(backend), fig, g; kwargs...)
 end
 
-function visualize!(fig, tn::Vector{ITensor}; kwargs...)
+function visualize!(fig, tn::Vector{ITensor}, sequence=nothing; kwargs...)
   return visualize!(fig, MetaDiGraph(tn); kwargs...)
 end
-visualize!(fig, ψ::MPS; kwargs...) = visualize!(fig, data(ψ); kwargs...)
-visualize!(fig, tn::Tuple{Vararg{ITensor}}; kwargs...) = visualize!(fig, collect(tn); kwargs...)
+visualize!(fig, ψ::MPS, sequence=nothing; kwargs...) = visualize!(fig, data(ψ); kwargs...)
+visualize!(fig, tn::Tuple{Vararg{ITensor}}, sequence=nothing; kwargs...) = visualize!(fig, collect(tn); kwargs...)
 visualize!(fig, tn::ITensor...; kwargs...) = visualize!(fig, collect(tn); kwargs...)
+
+function visualize!(fig, tn::Tuple{Vector{ITensor}}, sequence=nothing; kwargs...)
+  return visualize!(fig, tn[1], sequence; kwargs...)
+end
+function visualize!(fig, f::Function, tn::Tuple{Vararg{ITensor}}, sequence=nothing; kwargs...)
+  return visualize!(fig, tn, sequence; kwargs...)
+end
 
 function visualize(f::Union{Function,Type}, As...; kwargs...)
   # TODO: specialize on the function type. Also accept a general collection.
@@ -190,20 +197,6 @@ function visualize_sequence(f::Union{Function,Type}, tn::Tuple{Vector{ITensor}},
   return visualize_sequence(f, tn[1], sequence; kwargs...)
 end
 
-function visualize_symbol(ex::Symbol, kwargs::Expr...)
-  e = quote
-    visualize(identity, $(esc(ex)); vertex_labels_prefix=$(Expr(:quote, ex)), $(esc.(kwargs)...))
-  end
-  return e
-end
-
-function visualize_symbol!(fig, ex::Symbol, kwargs::Expr...)
-  e = quote
-    visualize!($(esc(fig)), identity, $(esc(ex)); vertex_labels_prefix=$(Expr(:quote, ex)), $(esc.(kwargs)...))
-  end
-  return e
-end
-
 is_kwarg(arg_or_kwarg::Symbol) = false
 is_kwarg(arg_or_kwarg::Expr) = (arg_or_kwarg.head == :parameters)
 
@@ -276,7 +269,7 @@ function vertex_labels_kwargs(args, iscollection)
   return vertex_labels_kw, vertex_labels_arg
 end
 
-function visualize_expr(vis_func, ex::Union{Symbol,Expr}, vis_kwargs::Expr...)
+function func_args_sequence_kwargs(ex, vis_kwargs...)
   func, args, kwargs, iscollection = function_args_kwargs(ex)
   sequence = get_kwarg(kwargs, :sequence)
   vertex_labels_kw, vertex_labels_arg = vertex_labels_kwargs(args, iscollection)
@@ -285,25 +278,21 @@ function visualize_expr(vis_func, ex::Union{Symbol,Expr}, vis_kwargs::Expr...)
   vertex_labels_kwarg_dict = Dict(vertex_labels_kw => vertex_labels_arg)
   merged_kwargs_dict = merge(vertex_labels_kwarg_dict, vis_kwargs_dict)
   merged_kwargs_expr = [:($k = $v) for (k, v) in pairs(merged_kwargs_dict)]
+  return func, esc.(args), sequence, esc.(merged_kwargs_expr)
+end
+
+function visualize_expr(vis_func, ex::Union{Symbol,Expr}, vis_kwargs::Expr...)
+  func, args, sequence, kwargs = func_args_sequence_kwargs(ex, vis_kwargs...)
   e = quote
-    $(vis_func)($(func), ($(esc.(args)...),), $(sequence); $(esc.(merged_kwargs_expr)...))
+    $(vis_func)($(func), ($(args...),), $(sequence); $(kwargs...))
   end
   return e
 end
 
-function visualize_expr!(fig, ex::Expr, kwargs::Expr...)
-  if ex.head == :call
-    # For inputs like `A * B`
-    e = quote
-      visualize!($(esc(fig)), $(first(ex.args)), $(esc.(ex.args[2:end])...); vertex_labels=$(expr_to_string.(ex.args[2:end])), $(esc.(kwargs)...))
-    end
-  elseif ex.head == :vect
-    # For inputs like `[A, B]`
-    e = quote
-      visualize!($(esc(fig)), collect, $(esc.(ex.args)...); vertex_labels=$(expr_to_string.(ex.args)), $(esc.(kwargs)...))
-    end
-  else
-    error("Visualizing expression $ex not supported.")
+function visualize_expr!(fig, vis_func!, ex::Union{Symbol,Expr}, vis_kwargs::Expr...)
+  func, args, sequence, kwargs = func_args_sequence_kwargs(ex, vis_kwargs...)
+  e = quote
+    $(vis_func!)($(esc(fig)), $(func), ($(args...),), $(sequence); $(kwargs...))
   end
   return e
 end
@@ -336,12 +325,12 @@ ABC = @visualize A * B * C
 AB = @visualize A * B
 # Use readline() to pause between plots
 readline()
-ABC = @visualize AB * C vertex=(labels = ["A*B", "C"],)
+ABC = @visualize AB * C vertex_labels = ["A*B", "C"]
 readline()
 
 # Save the results to figures for viewing later
 AB = @visualize fig1 A * B
-ABC = @visualize fig2 AB * C vertex=(labels = ["A*B", "C"],)
+ABC = @visualize fig2 AB * C vertex_labels = ["A*B", "C"]
 
 display(fig1)
 readline()
@@ -350,8 +339,13 @@ readline()
 ```
 
 # Keyword arguments:
-- `show = (dims=true, tags=false, plevs=false, ids=false, qns=false, arrows=auto)`: show various properties of an Index on the edges of the graph visualization.
-- `vertex = (labels=auto,)`: custom tensor labels to display on the vertices of the digram. If not specified, they are determined automatically from the input to the macro.
+- `show_dims=true`
+- `show_tags=false`
+- `show_plevs=false`
+- `show_ids=false`
+- `show_qns=false`
+- `arrow_show`
+- `vertex_labels`: custom tensor labels to display on the vertices of the digram. If not specified, they are determined automatically from the input to the macro.
 """
 macro visualize(fig::Symbol, ex::Symbol, kwargs::Expr...)
   e = quote
@@ -363,7 +357,7 @@ end
 
 macro visualize!(fig, ex::Symbol, kwargs::Expr...)
   e = quote
-    $(visualize_symbol!(fig, ex, kwargs...))
+    $(visualize_expr!(fig, visualize!, ex, kwargs...))
     $(esc(ex))
   end
   return e
@@ -404,7 +398,7 @@ end
 
 macro visualize!(fig, ex::Expr, kwargs::Expr...)
   e = quote
-    $(visualize_expr!(fig, ex, kwargs...))
+    $(visualize_expr!(fig, visualize!, ex, kwargs...))
     $(esc(ex))
   end
   return e
@@ -434,14 +428,14 @@ end
 
 macro visualize_noeval!(fig, ex::Symbol, kwargs::Expr...)
   e = quote
-    $(visualize_symbol!(fig, ex, kwargs...))
+    $(visualize_expr!(fig, visualize!, ex, kwargs...))
   end
   return e
 end
 
 macro visualize_noeval!(fig, ex::Expr, kwargs::Expr...)
   e = quote
-    $(visualize_expr!(fig, ex, kwargs...))
+    $(visualize_expr!(fig, visualize!, ex, kwargs...))
   end
   return e
 end

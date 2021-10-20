@@ -5,6 +5,7 @@ using Graphs
 using GLMakie
 
 include("utils/circuit_network.jl")
+include("utils/layered_layout.jl")
 
 N = 10
 layers = 10

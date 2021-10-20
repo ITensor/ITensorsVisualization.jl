@@ -2,9 +2,11 @@ using ITensors
 using ITensorsVisualization
 using Graphs
 using GLMakie
+using LayeredLayouts
 using PastaQ: qft
 
 include("utils/circuit_network.jl")
+include("utils/layered_layout.jl")
 
 N = 4
 gates = qft(N)

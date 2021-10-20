@@ -1,14 +1,12 @@
 using ITensors
-# TODO: change to
-# using ITensorGLMakie
 using ITensorsVisualization
 using Graphs
 using GLMakie
+using LayeredLayouts
 using PastaQ: randomcircuit
 
 include("utils/circuit_network.jl")
-
-using ITensorsVisualization: layered_layout
+include("utils/layered_layout.jl")
 
 Nx, Ny = 3, 3
 N = Nx * Ny

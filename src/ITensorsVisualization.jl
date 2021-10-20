@@ -5,7 +5,6 @@ using AbstractTrees
 using Colors
 using GeometryBasics
 using MetaGraphs
-using LayeredLayouts
 using LinearAlgebra
 using NetworkLayout
 using SparseArrays
@@ -41,7 +40,6 @@ export
   IndexLabels
 
 # Some general graph functionality
-include("layered_layout.jl")
 include("graphs.jl")
 
 # Backends interface

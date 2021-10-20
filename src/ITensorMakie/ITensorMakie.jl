@@ -111,7 +111,9 @@ function visualize!(
 
   if !overwrite_axis && (_ndims(layout) == 2)
     hidedecorations!(axis_plot.axis)
-    hidespines!(axis_plot.axis)
+    # This would hide the box around the plot
+    # TODO: make this optional
+    #hidespines!(axis_plot.axis)
     if interactive
       deregister_interaction!(axis_plot.axis, :rectanglezoom)
       register_interaction!(axis_plot.axis, :nhover, NodeHoverHighlight(axis_plot.plot))

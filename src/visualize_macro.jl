@@ -148,9 +148,9 @@ end
 function visualize_sequence(sequence, vertex_labels)
   graph, all_sequences = tree_to_graph(sequence)
   all_labels = sequence_labels(sequence, all_sequences, vertex_labels)
-  # TODO: Use `NetworkLayout.Buchheim` instead of `LayeredLayouts`
-  # (https://juliagraphs.org/NetworkLayout.jl/stable/#Buchheim-Tree-Drawing)
-  fig, _ = graphplot(graph; nlabels=all_labels, layout=layered_layout)
+  fig, ax, plt = graphplot(reverse(graph); arrow_show=false, nlabels=all_labels, layout=Buchheim())
+  hidedecorations!(ax)
+  #hidespines!(ax)
   return fig
 end
 

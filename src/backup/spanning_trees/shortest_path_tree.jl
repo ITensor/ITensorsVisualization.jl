@@ -1,4 +1,4 @@
-using LightGraphs
+using Graphs
 using Random
 
 Random.seed!(1234)

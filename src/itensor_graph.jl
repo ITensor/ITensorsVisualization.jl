@@ -16,7 +16,7 @@ function graph_dir(inds)
 end
 
 # TODO: rename graph, dispatch on QNs to DiGraph
-function LightGraphs.SimpleDiGraph(tn::Vector{ITensor})
+function Graphs.SimpleDiGraph(tn::Vector{ITensor})
   nv = length(tn)
   g = SimpleDiGraph(nv)
   for v1 in 1:nv, v2 in (v1 + 1):nv

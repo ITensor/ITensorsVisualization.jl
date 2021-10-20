@@ -1,4 +1,4 @@
-using LightGraphs, SimpleWeightedGraphs
+using Graphs, SimpleWeightedGraphs
 using GraphRecipes, Plots
 
 #spanning_tree_method = "mst"
@@ -6,7 +6,7 @@ spanning_tree_method = "bfs"
 
 nx, ny = 7, 7
 n = nx * ny
-g = LightGraphs.grid((nx, ny); periodic=false)
+g = Graphs.grid((nx, ny); periodic=false)
 
 nx_middle = nx ÷ 2 + 1
 ny_middle = ny ÷ 2 + 1

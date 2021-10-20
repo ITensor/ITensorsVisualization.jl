@@ -1,7 +1,7 @@
 using ITensors
 using ITensorsVisualization
 using LayeredLayouts
-using LightGraphs
+using Graphs
 using GLMakie
 
 function layout(g)

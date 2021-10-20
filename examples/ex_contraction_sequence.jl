@@ -1,7 +1,7 @@
 using ITensors
 using ITensorsVisualization
 using GLMakie
-using LightGraphs: Graph
+using Graphs: Graph
 using Random
 
 using ITensors.ContractionSequenceOptimization: optimal_contraction_sequence

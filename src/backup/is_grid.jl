@@ -1,4 +1,4 @@
-using LightGraphs
+using Graphs
 
 is_grid(g::AbstractGraph; dim, periodic=false) = is_grid(Val(dim), Val(periodic), g)
 

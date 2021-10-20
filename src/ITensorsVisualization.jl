@@ -12,9 +12,9 @@ using SparseArrays
 using Statistics
 
 # Avoid conflict with `ITensors.contract`
-# (LightGraphs also exports `contract).
-using LightGraphs:
-  LightGraphs,
+# (Graphs also exports `contract`).
+using Graphs:
+  Graphs,
   AbstractEdge,
   AbstractGraph,
   SimpleGraph,

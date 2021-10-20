@@ -1,6 +1,6 @@
 using ITensors
 using ITensorsVisualization
-using LightGraphs
+using Graphs
 using GLMakie
 using PastaQ: qft
 

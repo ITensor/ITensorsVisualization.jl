@@ -1,5 +1,5 @@
 using AbstractTrees
-using LightGraphs
+using Graphs
 using ITensors
 using ITensorsVisualization
 using GLMakie

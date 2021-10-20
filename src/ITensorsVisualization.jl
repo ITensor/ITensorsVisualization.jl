@@ -36,6 +36,7 @@ export
   @visualize_noeval,
   @visualize_noeval!,
   @visualize_sequence,
+  @visualize_sequence_noeval,
   itensornetwork,
   IndexLabels
 

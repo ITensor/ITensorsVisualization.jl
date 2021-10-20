@@ -53,7 +53,7 @@ can_inplaces = [false, true]
 
   fig_tn = @visualize_noeval tn backend=backend
 
-  by = extension == "png" ? psnr_equality(1) : isequal
+  by = extension == "png" ? psnr_equality(0.5) : isequal
 
   @test_reference "references/R.$extension" figR by=by
   @test_reference "references/R1.$extension" figR1 by=by

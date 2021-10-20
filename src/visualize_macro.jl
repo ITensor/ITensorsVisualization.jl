@@ -453,3 +453,10 @@ macro visualize_sequence(ex::Expr, kwargs::Expr...)
   end
   return e
 end
+
+macro visualize_sequence_noeval(ex::Expr, kwargs::Expr...)
+  e = quote
+    $(visualize_expr(visualize_sequence, ex, kwargs...))
+  end
+  return e
+end

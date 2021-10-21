@@ -20,9 +20,9 @@ tn = [ψ..., U..., ψ̃...]
 
 original_backend = ITensorsVisualization.set_backend!("Makie")
 
-edge_labels = IndexLabels(; tags=true, plevs=true)
+edge_labels = (; tags=true, plevs=true)
 @visualize fig tn arrow_show=true edge_labels=edge_labels edge_textsize=20 layout=layered_layout
-edge_labels = IndexLabels(; plevs=true)
+edge_labels = (; plevs=true)
 @visualize! fig[1, 2] tn ndims=3 edge_labels=edge_labels edge_textsize=20
 
 ITensorsVisualization.set_backend!(original_backend)

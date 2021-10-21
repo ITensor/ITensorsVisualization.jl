@@ -23,7 +23,7 @@ ERn2 = randomITensor(l⃗[n + 1]', dag(h⃗[n + 1]), dag(l⃗[n + 1]))
 backend = "Makie"
 original_backend = ITensorsVisualization.set_backend!(backend)
 
-edge_labels = IndexLabels(backend; plevs=true)
+edge_labels = (; plevs=true)
 
 R = @visualize fig1 ELn0 * ψn1n2 * hn1 * hn2 * ERn2 edge_labels=edge_labels vertex_size=50
 @show R ≈ ELn0 * ψn1n2 * hn1 * hn2 * ERn2

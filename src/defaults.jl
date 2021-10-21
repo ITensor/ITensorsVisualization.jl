@@ -71,8 +71,16 @@ function IndexLabels(b::Backend;
   return IndexLabels(dims, tags, ids, plevs, qns, newlines)
 end
 
+function edge_labels(b::Backend, l::IndexLabels, g::AbstractGraph)
+  return edge_labels(l, g)
+end
+
 function edge_labels(l::IndexLabels, g::AbstractGraph)
   return [edge_label(l, g, e) for e in edges(g)]
+end
+
+function edge_labels(b::Backend, params::NamedTuple, g::AbstractGraph)
+  return IndexLabels(b; params...)(g)
 end
 
 function edge_label(l::IndexLabels, g, e)

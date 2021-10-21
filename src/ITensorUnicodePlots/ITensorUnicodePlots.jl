@@ -58,7 +58,7 @@ function visualize(
 )
   edge_color = :blue # TODO: make into keyword argument
 
-  edge_labels = ITensorsVisualization.edge_labels(edge_labels, g)
+  edge_labels = ITensorsVisualization.edge_labels(b, edge_labels, g)
 
   node_pos = layout(g)
   edge_pos = [node_pos[src(edge)] => node_pos[dst(edge)] for edge in edges(g)]
@@ -70,7 +70,7 @@ function visualize(
   #vertex_size = vertex_size * (xmax - xmin)
 
   xscale = 0.1 * (xmax - xmin)
-  yscale = max(0.2 * (ymax - ymin), 0.1 * xscale)
+  yscale = max(0.3 * (ymax - ymin), 0.1 * xscale)
   xlim = [xmin - xscale, xmax + xscale]
   ylim = [ymin - yscale, ymax + yscale]
 

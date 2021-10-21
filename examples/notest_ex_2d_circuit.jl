@@ -22,7 +22,7 @@ tn = [prod(ψ), U..., prod(ψ̃)]
 
 original_backend = ITensorsVisualization.set_backend!("Makie")
 
-edge_labels = IndexLabels(; plevs=true)
+edge_labels = (; plevs=true)
 @visualize fig tn arrow_show=true edge_labels=edge_labels layout=layered_layout edge_textsize=20
 @visualize! fig[2, 1] tn ndims=3 arrow_show=true edge_labels=edge_labels edge_textsize=10
 

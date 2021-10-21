@@ -178,7 +178,7 @@ function visualize_sequence(
 
   # TODO: clean this up a bit
   vertex_labels_prefix = get(kwargs, :vertex_labels_prefix, default_vertex_labels_prefix(Backend("Makie"), MetaDiGraph(tn)))
-  vertex_labels = default_vertex_labels(Backend(""), MetaDiGraph(tn), vertex_labels_prefix)
+  vertex_labels = get(kwargs, :vertex_labels, default_vertex_labels(Backend(""), MetaDiGraph(tn), vertex_labels_prefix))
 
   fig = visualize_sequence(sequence, vertex_labels)
 

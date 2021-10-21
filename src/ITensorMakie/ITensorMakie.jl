@@ -59,7 +59,7 @@ function visualize!(
     """)
   end
 
-  edge_labels = ITensorsVisualization.edge_labels(edge_labels, g)
+  edge_labels = ITensorsVisualization.edge_labels(b, edge_labels, g)
 
   if length(vertex_labels) ≠ nv(g)
     throw(DimensionMismatch("$(length(vertex_labels)) vertex labels $(vertex_labels) were specified but there are $(nv(g)) tensors in the diagram, please specify the correct number of labels."))

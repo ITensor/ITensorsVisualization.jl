@@ -1,3 +1,9 @@
+> ⚠️ **INFO: This repository is deprecated**
+> 
+> The functionality of `ITensorsVisualization` has been moved into the monorepo at [ITensors.jl](https://github.com/ITensor/ITensors.jl).
+> For the latest ITensor visualization functionality, use particular backend packages such as `ITensorUnicodePlots`
+> or `ITensorGLMakie`.
+
 # ITensorsVisualization
 
 This is a package for visualizing tensor networks. The main purpose is to use it with the [ITensors.jl](https://github.com/ITensor/ITensors.jl) package to view and debug tensor network contractions, for example:
